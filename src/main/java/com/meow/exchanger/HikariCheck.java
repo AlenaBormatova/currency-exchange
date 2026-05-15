@@ -3,6 +3,8 @@ package com.meow.exchanger;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.util.ConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -11,6 +13,8 @@ import java.sql.Statement;
 import java.util.List;
 
 public class HikariCheck {
+
+    private static final Logger log = LoggerFactory.getLogger(HikariCheck.class);
 
     public static void main(String[] args) {
         String databasePath = Path.of(
@@ -27,11 +31,10 @@ public class HikariCheck {
             checkSimpleConnection();
             checkCurrencyDao();
 
-            System.out.println("HikariCP works correctly");
+            log.info("HikariCP works correctly");
 
         } catch (Exception e) {
-            System.err.println("HikariCP check failed");
-            e.printStackTrace();
+            log.error("HikariCP check failed", e);
         } finally {
             ConnectionFactory.shutdown();
         }
@@ -43,7 +46,7 @@ public class HikariCheck {
              ResultSet resultSet = statement.executeQuery("SELECT 1")) {
 
             if (resultSet.next()) {
-                System.out.println("Connection test result: " + resultSet.getInt(1));
+                log.info("Connection test result: {}", resultSet.getInt(1));
             }
         }
     }
@@ -53,10 +56,10 @@ public class HikariCheck {
 
         List<Currency> currencies = currencyDao.findAll();
 
-        System.out.println("Currencies count: " + currencies.size());
+        log.info("Currencies count: {}", currencies.size());
 
         for (Currency currency : currencies) {
-            System.out.println(currency.getCode() + " - " + currency.getName());
+            log.info("{} - {}", currency.getCode(), currency.getName());
         }
     }
 }

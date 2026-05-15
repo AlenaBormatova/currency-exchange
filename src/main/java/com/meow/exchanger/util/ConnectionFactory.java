@@ -2,11 +2,15 @@ package com.meow.exchanger.util;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public final class ConnectionFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(ConnectionFactory.class);
 
     private static HikariDataSource dataSource;
 
@@ -18,7 +22,7 @@ public final class ConnectionFactory {
             return;
         }
 
-        System.out.println("Database path: " + databasePath);
+        log.info("Database path: {}", databasePath);
 
         HikariConfig config = new HikariConfig();
 
@@ -37,7 +41,7 @@ public final class ConnectionFactory {
 
         dataSource = new HikariDataSource(config);
 
-        System.out.println("HikariCP pool initialized");
+        log.info("HikariCP pool initialized");
     }
 
     public static Connection getConnection() throws SQLException {
@@ -52,6 +56,8 @@ public final class ConnectionFactory {
         if (dataSource != null) {
             dataSource.close();
             dataSource = null;
+
+            log.info("HikariCP pool shut down");
         }
     }
 }

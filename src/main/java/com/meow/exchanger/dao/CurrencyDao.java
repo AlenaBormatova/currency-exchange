@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class CurrencyDao {
-    private final String FIND_ALL_SQL = "SELECT ID, Code, FullName, Sign FROM Currencies ORDER BY Code";
-    private final String FIND_BY_CODE_SQL = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
-    private final String INSERT_SQL = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
 
     public List<Currency> findAll() throws SQLException {
+        String FIND_ALL_SQL = "SELECT ID, Code, FullName, Sign FROM Currencies ORDER BY Code";
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(FIND_ALL_SQL);
              ResultSet resultSet = statement.executeQuery()) {
@@ -33,6 +31,7 @@ public class CurrencyDao {
     }
 
     public Optional<Currency> findByCode(String code) throws SQLException {
+        String FIND_BY_CODE_SQL = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE_SQL)) {
 
@@ -49,6 +48,7 @@ public class CurrencyDao {
     }
 
     public Currency insert(Currency currency) throws SQLException {
+        String INSERT_SQL = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 

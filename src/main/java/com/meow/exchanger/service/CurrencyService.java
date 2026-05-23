@@ -71,14 +71,10 @@ public class CurrencyService {
     }
 
     private String normalizeRequired(String value, String blankMessage) {
-        if (isBlank(value)) {
+        if (value == null || value.isBlank()) {
             throw new BadRequestException(blankMessage);
         }
 
         return value.trim();
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
     }
 }

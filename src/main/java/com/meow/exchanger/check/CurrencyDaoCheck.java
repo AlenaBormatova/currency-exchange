@@ -1,4 +1,4 @@
-package com.meow.exchanger;
+package com.meow.exchanger.check;
 
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.model.Currency;

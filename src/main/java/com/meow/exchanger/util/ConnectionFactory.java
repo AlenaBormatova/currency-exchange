@@ -17,16 +17,14 @@ public final class ConnectionFactory {
     private ConnectionFactory() {
     }
 
-    public static synchronized void init(String databasePath) {
+    public static synchronized void init() {
         if (dataSource != null) {
             return;
         }
 
-        log.info("Database path: {}", databasePath);
-
         HikariConfig config = new HikariConfig();
 
-        config.setJdbcUrl("jdbc:sqlite:" + databasePath);
+        config.setJdbcUrl("jdbc:sqlite::resource:database/currency_exchange.db");
         config.setDriverClassName("org.sqlite.JDBC");
 
         config.setPoolName("CurrencyExchangeHikariPool");

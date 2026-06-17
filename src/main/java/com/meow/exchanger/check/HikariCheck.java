@@ -6,7 +6,6 @@ import com.meow.exchanger.util.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -17,16 +16,9 @@ public class HikariCheck {
     private static final Logger log = LoggerFactory.getLogger(HikariCheck.class);
 
     public static void main(String[] args) {
-        String databasePath = Path.of(
-                "src",
-                "main",
-                "resources",
-                "database",
-                "currency_exchange.db"
-        ).toAbsolutePath().toString();
 
         try {
-            ConnectionFactory.init(databasePath);
+            ConnectionFactory.init();
 
             checkSimpleConnection();
             checkCurrencyDao();

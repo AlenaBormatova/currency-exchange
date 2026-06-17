@@ -2,6 +2,7 @@ package com.meow.exchanger.check;
 
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.model.Currency;
+import com.meow.exchanger.util.ConnectionFactory;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -10,15 +11,19 @@ import java.util.Optional;
 public class CurrencyDaoCheck {
 
     public static void main(String[] args) {
-        CurrencyDao currencyDao = new CurrencyDao();
 
         try {
+            ConnectionFactory.init();
+
+            CurrencyDao currencyDao = new CurrencyDao();
             checkFindAll(currencyDao);
             checkFindByCode(currencyDao);
             checkInsert(currencyDao);
         } catch (SQLException e) {
             System.err.println("Database error:");
             e.printStackTrace();
+        } finally {
+            ConnectionFactory.shutdown();
         }
     }
 

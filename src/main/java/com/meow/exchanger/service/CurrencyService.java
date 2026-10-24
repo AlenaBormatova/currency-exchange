@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CurrencyService {
 
-    private static final String CURRENCY_CODE_PATTERN = "[A-Z]{3}";
+    public static final String CURRENCY_CODE_PATTERN = "[A-Z]{3}";
 
     private final CurrencyDao currencyDao;
 
@@ -36,7 +36,7 @@ public class CurrencyService {
 
     public Currency insert(String name, String code, String sign) throws SQLException {
         Currency currency = prepareCurrencyForInsert(name, code, sign);
-        currencyCodeIsUnique(currency.getCode());
+        validateCurrencyCodeIsUnique(currency.getCode());
 
         return currencyDao.insert(currency);
     }
@@ -54,7 +54,7 @@ public class CurrencyService {
         );
     }
 
-    private void currencyCodeIsUnique(String code) throws SQLException {
+    private void validateCurrencyCodeIsUnique(String code) throws SQLException {
         if (currencyDao.findByCode(code).isPresent()) {
             throw new ConflictException("Currency with this code already exists");
         }

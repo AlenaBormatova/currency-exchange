@@ -35,21 +35,16 @@ public class ExchangeRateService {
     }
 
     public Optional<ExchangeRate> findByPair(String baseCode, String targetCode) throws SQLException {
-        String normalizedBaseCode = normalizeCode(baseCode, "Currency code is missing in the path");
-        String normalizedTargetCode = normalizeCode(targetCode, "Currency code is missing in the path");
+        String normalizedBaseCode = normalizeCode(baseCode);
+        String normalizedTargetCode = normalizeCode(targetCode);
 
         return exchangeRateDao.findByPair(normalizedBaseCode, normalizedTargetCode);
     }
 
     public Optional<ExchangeRate> findByPair(String currencyPair) throws SQLException {
-        if (currencyPair == null || currencyPair.length() != 6) {
-            throw new IllegalArgumentException("Invalid currency pair");
-        }
+        CurrencyPair pair = parseCurrencyPair(currencyPair);
 
-        String baseCode = currencyPair.substring(0, 3);
-        String targetCode = currencyPair.substring(3, 6);
-
-        return exchangeRateDao.findByPair(baseCode, targetCode);
+        return exchangeRateDao.findByPair(pair.baseCode(), pair.targetCode());
     }
 
     public ExchangeRate insert(ExchangeRate exchangeRate) throws SQLException {
@@ -58,6 +53,15 @@ public class ExchangeRateService {
                 newExchangeRate.getTargetCurrency().getCode());
 
         return exchangeRateDao.insert(newExchangeRate);
+    }
+
+    public ExchangeRate updateRate(String currencyPair, BigDecimal rate) throws SQLException {
+        validateRate(rate);
+
+        CurrencyPair pair = parseCurrencyPair(currencyPair);
+
+        return exchangeRateDao.updateRate(pair.baseCode(), pair.targetCode(), rate)
+                .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
     }
 
     private ExchangeRate prepareExchangeRateForInsert(ExchangeRate exchangeRate) throws SQLException {
@@ -75,6 +79,27 @@ public class ExchangeRateService {
         );
     }
 
+    private CurrencyPair parseCurrencyPair(String currencyPair) {
+        if (currencyPair == null || currencyPair.length() != 6) {
+            throw new BadRequestException("Invalid currency pair");
+        }
+
+        String baseCode = currencyPair.substring(0, 3);
+        String targetCode = currencyPair.substring(3, 6);
+
+        String normalizedBaseCode = normalizeCode(baseCode);
+        String normalizedTargetCode = normalizeCode(targetCode);
+
+        return new CurrencyPair(normalizedBaseCode, normalizedTargetCode);
+    }
+
+    private Currency findRequiredCurrency(String code) throws SQLException {
+        String normalizedCode = normalizeCode(code);
+        return currencyDao.findByCode(normalizedCode)
+                .orElseThrow(() -> new NotFoundException("Currency not found"));
+    }
+
+
     private void validateExchangeRate(ExchangeRate exchangeRate) {
         if (exchangeRate == null) {
             throw new BadRequestException("Exchange rate is missing");
@@ -84,16 +109,13 @@ public class ExchangeRateService {
             throw new BadRequestException("Currency is missing");
         }
 
-        BigDecimal rate = exchangeRate.getRate();
+        validateRate(exchangeRate.getRate());
+    }
+
+    private void validateRate(BigDecimal rate) {
         if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Invalid rate value");
         }
-    }
-
-    private Currency findRequiredCurrency(String code) throws SQLException {
-        String normalizedCode = normalizeCode(code, "Currency code is missing");
-        return currencyDao.findByCode(normalizedCode)
-                .orElseThrow(() -> new NotFoundException("Currency not found"));
     }
 
     private void validateExchangeRatePairIsUnique(String normalizedBaseCode,
@@ -102,8 +124,12 @@ public class ExchangeRateService {
             throw new ConflictException("Exchange rate already exists");
     }
 
-    private String normalizeCode(String code, String blankMessage) {
-        String normalizedCode = normalizeRequired(code, blankMessage).trim().toUpperCase();
+    private String normalizeCode(String code) {
+        if (code == null || code.isBlank()) {
+            throw new BadRequestException("Currency code is missing");
+        }
+
+        String normalizedCode = code.trim().toUpperCase();
 
         if (!normalizedCode.matches(CURRENCY_CODE_PATTERN)) {
             throw new BadRequestException("Currency code must consist of 3 Latin letters");
@@ -112,11 +138,6 @@ public class ExchangeRateService {
         return normalizedCode;
     }
 
-    private String normalizeRequired(String value, String blankMessage) {
-        if (value == null || value.isBlank()) {
-            throw new BadRequestException(blankMessage);
-        }
-
-        return value.trim();
+    private record CurrencyPair(String baseCode, String targetCode) {
     }
 }

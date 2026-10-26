@@ -42,16 +42,18 @@ public class ExchangeRateService {
 
     public ExchangeRate insert(ExchangeRate exchangeRate) throws SQLException {
         ExchangeRate newExchangeRate = prepareExchangeRateForInsert(exchangeRate);
-        validateExchangeRatePairIsUnique(newExchangeRate.getBaseCurrency().getCode(),
+
+        validateExchangeRatePairIsUnique(
+                newExchangeRate.getBaseCurrency().getCode(),
                 newExchangeRate.getTargetCurrency().getCode());
 
         return exchangeRateDao.insert(newExchangeRate);
     }
 
     public ExchangeRate updateRate(String currencyPair, BigDecimal rate) throws SQLException {
-        validateRate(rate);
-
         CurrencyPair pair = parseCurrencyPair(currencyPair);
+
+        validateRate(rate);
 
         return exchangeRateDao.updateRate(pair.baseCode(), pair.targetCode(), rate)
                 .orElseThrow(() -> new NotFoundException("Exchange rate not found"));

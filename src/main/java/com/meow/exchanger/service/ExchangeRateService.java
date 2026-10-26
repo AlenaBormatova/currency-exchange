@@ -34,13 +34,6 @@ public class ExchangeRateService {
         return exchangeRateDao.findAll();
     }
 
-    public Optional<ExchangeRate> findByPair(String baseCode, String targetCode) throws SQLException {
-        String normalizedBaseCode = normalizeCode(baseCode);
-        String normalizedTargetCode = normalizeCode(targetCode);
-
-        return exchangeRateDao.findByPair(normalizedBaseCode, normalizedTargetCode);
-    }
-
     public Optional<ExchangeRate> findByPair(String currencyPair) throws SQLException {
         CurrencyPair pair = parseCurrencyPair(currencyPair);
 

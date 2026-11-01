@@ -10,4 +10,5 @@ public record ExchangeResponse(
         BigDecimal rate,
         BigDecimal amount,
         BigDecimal convertedAmount
-) {}
+) {
+}

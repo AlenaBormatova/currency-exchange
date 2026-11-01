@@ -2,6 +2,7 @@ package com.meow.exchanger.service;
 
 import com.meow.exchanger.dto.ExchangeResponse;
 import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
 
 import java.math.BigDecimal;
@@ -48,18 +49,12 @@ public class ExchangeService {
     }
 
     private ExchangeResponse createDirectExchangeResponse(ExchangeRate exchangeRate, BigDecimal amount) {
-        BigDecimal rate = exchangeRate.getRate();
 
-        BigDecimal convertedAmount = amount
-                .multiply(rate)
-                .setScale(2, RoundingMode.HALF_EVEN);
-
-        return new ExchangeResponse(
+        return createExchangeResponse(
                 exchangeRate.getBaseCurrency(),
                 exchangeRate.getTargetCurrency(),
-                rate,
-                amount,
-                convertedAmount
+                exchangeRate.getRate(),
+                amount
         );
     }
 
@@ -72,17 +67,13 @@ public class ExchangeService {
                 RoundingMode.HALF_EVEN
         );
 
-        BigDecimal convertedAmount = amount
-                .multiply(directRate)
-                .setScale(2, RoundingMode.HALF_EVEN);
-
-        return new ExchangeResponse(
-                exchangeRate.getTargetCurrency(),
+        return createExchangeResponse(
                 exchangeRate.getBaseCurrency(),
+                exchangeRate.getTargetCurrency(),
                 directRate,
-                amount,
-                convertedAmount
+                amount
         );
+
     }
 
     private ExchangeResponse createCrossExchangeResponse(
@@ -99,14 +90,26 @@ public class ExchangeService {
                 RoundingMode.HALF_EVEN
         );
 
-        BigDecimal convertedAmount = amount
-                .multiply(directRate)
-                .setScale(2, RoundingMode.HALF_EVEN);
-
-        return new ExchangeResponse(
+        return createExchangeResponse(
                 usdToBaseRate.getTargetCurrency(),
                 usdToTargetRate.getTargetCurrency(),
                 directRate,
+                amount
+        );
+    }
+
+    private ExchangeResponse createExchangeResponse(Currency baseCurrency,
+                                                    Currency targetCurrency,
+                                                    BigDecimal rate,
+                                                    BigDecimal amount) {
+        BigDecimal convertedAmount = amount
+                .multiply(rate)
+                .setScale(2, RoundingMode.HALF_EVEN);
+
+        return new ExchangeResponse(
+                baseCurrency,
+                targetCurrency,
+                rate,
                 amount,
                 convertedAmount
         );

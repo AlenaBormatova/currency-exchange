@@ -68,8 +68,8 @@ public class ExchangeService {
         );
 
         return createExchangeResponse(
-                exchangeRate.getBaseCurrency(),
                 exchangeRate.getTargetCurrency(),
+                exchangeRate.getBaseCurrency(),
                 directRate,
                 amount
         );

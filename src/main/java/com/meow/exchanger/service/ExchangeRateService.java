@@ -56,10 +56,16 @@ public class ExchangeRateService {
 
     private ExchangeRate prepareExchangeRateForInsert(ExchangeRate exchangeRate) throws SQLException {
         validateExchangeRate(exchangeRate);
+
+        String normalizedBaseCode = normalizeCode(exchangeRate.getBaseCurrency().getCode());
+        String normalizedTargetCode = normalizeCode(exchangeRate.getTargetCurrency().getCode());
+
+        validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
+
         BigDecimal rate = exchangeRate.getRate();
 
-        Currency baseCurrency = findRequiredCurrency(exchangeRate.getBaseCurrency().getCode());
-        Currency targetCurrency = findRequiredCurrency(exchangeRate.getTargetCurrency().getCode());
+        Currency baseCurrency = findRequiredCurrency(normalizedBaseCode);
+        Currency targetCurrency = findRequiredCurrency(normalizedTargetCode);
 
         return new ExchangeRate(
                 null,
@@ -79,6 +85,8 @@ public class ExchangeRateService {
 
         String normalizedBaseCode = normalizeCode(baseCode);
         String normalizedTargetCode = normalizeCode(targetCode);
+
+        validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
 
         return new CurrencyPair(normalizedBaseCode, normalizedTargetCode);
     }
@@ -126,6 +134,12 @@ public class ExchangeRateService {
         }
 
         return normalizedCode;
+    }
+
+    private void validateDifferentCurrencies(String normalizedBaseCode, String normalizedTargetCode) {
+        if (normalizedBaseCode.equals(normalizedTargetCode)) {
+            throw new BadRequestException("Base and target currencies must be different");
+        }
     }
 
     private record CurrencyPair(String baseCode, String targetCode) {

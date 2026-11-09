@@ -35,6 +35,10 @@ public class ExchangeService {
             return createInverseExchangeResponse(reverseRate.get(), amount);
         }
 
+        if (fromCode.equals("USD") || toCode.equals("USD")) {
+            throw new NotFoundException("Exchange rate not found");
+        }
+
         String usdToBasePair = "USD" + fromCode;
         String usdToTargetPair = "USD" + toCode;
 

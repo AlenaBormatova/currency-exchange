@@ -5,6 +5,7 @@ import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.exception.BadRequestException;
+import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.exception.NotFoundException;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
@@ -13,15 +14,18 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(ExchangeRateServlet.class);
 
     private final Gson gson = new Gson();
     private ExchangeRateService exchangeRateService;
@@ -47,21 +51,38 @@ public class ExchangeRateServlet extends HttpServlet {
             }
 
             String currencyPair = pathInfo.substring(1);
+
             ExchangeRate exchangeRate = exchangeRateService.findByPair(currencyPair)
                     .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
-            sendJsonResponse(gson.toJson(exchangeRate), response, HttpServletResponse.SC_OK);
+
+            sendJsonResponse(
+                    gson.toJson(exchangeRate),
+                    response,
+                    HttpServletResponse.SC_OK
+            );
 
         } catch (BadRequestException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_BAD_REQUEST);
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    response,
+                    HttpServletResponse.SC_BAD_REQUEST
+            );
 
         } catch (NotFoundException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_NOT_FOUND);
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    response,
+                    HttpServletResponse.SC_NOT_FOUND
+            );
 
-        } catch (SQLException e) {
-            ErrorResponse errorResponse = new ErrorResponse("Internal server error");
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } catch (DatabaseException e) {
+            log.error("Failed to get exchange rate", e);
+
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse("Internal server error")),
+                    response,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -72,6 +93,7 @@ public class ExchangeRateServlet extends HttpServlet {
 
         try {
             String pathInfo = request.getPathInfo();
+
             if (pathInfo == null || pathInfo.equals("/")) {
                 throw new BadRequestException("Currency pair is missing in the path");
             }
@@ -81,21 +103,27 @@ public class ExchangeRateServlet extends HttpServlet {
             BigDecimal parsedRate = null;
 
             String requestBody = request.getReader().readLine();
+
             if (requestBody == null || requestBody.isBlank()) {
                 throw new BadRequestException("Invalid rate");
             }
+
             String[] parameters = requestBody.split("&");
 
             for (String parameter : parameters) {
                 String[] parts = parameter.split("=", 2);
+
                 try {
                     String decodedParameterName = URLDecoder.decode(parts[0], StandardCharsets.UTF_8);
+
                     if (decodedParameterName.equals("rate") && parts.length >= 2) {
                         String decodedRate = URLDecoder.decode(parts[1], StandardCharsets.UTF_8);
+
                         if (!decodedRate.isBlank()) {
                             parsedRate = new BigDecimal(decodedRate);
                         }
                     }
+
                 } catch (IllegalArgumentException e) {
                     throw new BadRequestException("Invalid rate");
                 }
@@ -106,20 +134,35 @@ public class ExchangeRateServlet extends HttpServlet {
             }
 
             ExchangeRate exchangeRate = exchangeRateService.updateRate(currencyPair, parsedRate);
-            sendJsonResponse(gson.toJson(exchangeRate), response, HttpServletResponse.SC_OK);
+
+            sendJsonResponse(
+                    gson.toJson(exchangeRate),
+                    response,
+                    HttpServletResponse.SC_OK
+            );
 
         } catch (BadRequestException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_BAD_REQUEST);
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    response,
+                    HttpServletResponse.SC_BAD_REQUEST
+            );
 
         } catch (NotFoundException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_NOT_FOUND);
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    response,
+                    HttpServletResponse.SC_NOT_FOUND
+            );
 
-        } catch (SQLException e) {
-            ErrorResponse errorResponse = new ErrorResponse("Internal server error");
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } catch (DatabaseException e) {
+            log.error("Failed to update exchange rate", e);
 
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse("Internal server error")),
+                    response,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
         }
     }
 

@@ -1,8 +1,12 @@
 package com.meow.exchanger.dao;
 
+import com.meow.exchanger.exception.ConflictException;
+import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.util.ConnectionFactory;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -36,7 +40,7 @@ public class ExchangeRateDao {
             JOIN Currencies tc ON er.TargetCurrencyId = tc.ID
             """;
 
-    public List<ExchangeRate> findAll() throws SQLException {
+    public List<ExchangeRate> findAll() {
         String FIND_ALL_SQL = SELECT_WITH_CURRENCIES + " ORDER BY bc.Code, tc.Code";
 
         try (Connection connection = ConnectionFactory.getConnection();
@@ -50,11 +54,14 @@ public class ExchangeRateDao {
             }
 
             return exchangeRates;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to load exchange rates", e);
         }
     }
 
-    public Optional<ExchangeRate> findByPair(String baseCode, String targetCode) throws SQLException {
-        String FIND_BY_PAIR_CODES_SQL = SELECT_WITH_CURRENCIES + """
+    public Optional<ExchangeRate> findByPair(String baseCode, String targetCode) {
+        String FIND_BY_PAIR_CODES_SQL = ExchangeRateDao.SELECT_WITH_CURRENCIES + """
                 WHERE bc.Code = ?
                   AND tc.Code = ?
                 """;
@@ -70,12 +77,15 @@ public class ExchangeRateDao {
                     return Optional.of(mapRow(resultSet));
                 }
             }
-        }
 
-        return Optional.empty();
+            return Optional.empty();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to find exchange rate", e);
+        }
     }
 
-    public ExchangeRate insert(ExchangeRate exchangeRate) throws SQLException {
+    public ExchangeRate insert(ExchangeRate exchangeRate) {
         String INSERT_SQL = """
                 INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate)
                 VALUES (?, ?, ?)
@@ -98,10 +108,18 @@ public class ExchangeRateDao {
                     exchangeRate.getTargetCurrency(),
                     exchangeRate.getRate()
             );
+
+        } catch (SQLException e) {
+            if (e instanceof SQLiteException sqliteException
+                    && sqliteException.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE) {
+                throw new ConflictException("Exchange rate already exists");
+            }
+
+            throw new DatabaseException("Failed to insert exchange rate", e);
         }
     }
 
-    public Optional<ExchangeRate> updateRate(String baseCode, String targetCode, BigDecimal rate) throws SQLException {
+    public Optional<ExchangeRate> updateRate(String baseCode, String targetCode, BigDecimal rate) {
         String UPDATE_RATE_SQL = """
                 UPDATE ExchangeRates
                 SET Rate = ?
@@ -119,6 +137,8 @@ public class ExchangeRateDao {
             if (statement.executeUpdate() == 0) {
                 return Optional.empty();
             }
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to update exchange rate", e);
         }
 
         return findByPair(baseCode, targetCode);

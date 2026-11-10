@@ -3,13 +3,11 @@ package com.meow.exchanger.service;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.exception.BadRequestException;
-import com.meow.exchanger.exception.ConflictException;
 import com.meow.exchanger.exception.NotFoundException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,27 +23,23 @@ public class ExchangeRateService {
         this.currencyDao = currencyDao;
     }
 
-    public List<ExchangeRate> findAll() throws SQLException {
+    public List<ExchangeRate> findAll() {
         return exchangeRateDao.findAll();
     }
 
-    public Optional<ExchangeRate> findByPair(String currencyPair) throws SQLException {
+    public Optional<ExchangeRate> findByPair(String currencyPair) {
         CurrencyPair pair = parseCurrencyPair(currencyPair);
 
         return exchangeRateDao.findByPair(pair.baseCode(), pair.targetCode());
     }
 
-    public ExchangeRate insert(ExchangeRate exchangeRate) throws SQLException {
+    public ExchangeRate insert(ExchangeRate exchangeRate) {
         ExchangeRate newExchangeRate = prepareExchangeRateForInsert(exchangeRate);
-
-        validateExchangeRatePairIsUnique(
-                newExchangeRate.getBaseCurrency().getCode(),
-                newExchangeRate.getTargetCurrency().getCode());
 
         return exchangeRateDao.insert(newExchangeRate);
     }
 
-    public ExchangeRate updateRate(String currencyPair, BigDecimal rate) throws SQLException {
+    public ExchangeRate updateRate(String currencyPair, BigDecimal rate) {
         CurrencyPair pair = parseCurrencyPair(currencyPair);
 
         validateRate(rate);
@@ -54,7 +48,7 @@ public class ExchangeRateService {
                 .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
     }
 
-    private ExchangeRate prepareExchangeRateForInsert(ExchangeRate exchangeRate) throws SQLException {
+    private ExchangeRate prepareExchangeRateForInsert(ExchangeRate exchangeRate) {
         validateExchangeRate(exchangeRate);
 
         String normalizedBaseCode = normalizeCode(exchangeRate.getBaseCurrency().getCode());
@@ -91,8 +85,9 @@ public class ExchangeRateService {
         return new CurrencyPair(normalizedBaseCode, normalizedTargetCode);
     }
 
-    private Currency findRequiredCurrency(String code) throws SQLException {
+    private Currency findRequiredCurrency(String code) {
         String normalizedCode = normalizeCode(code);
+
         return currencyDao.findByCode(normalizedCode)
                 .orElseThrow(() -> new NotFoundException("Currency not found"));
     }
@@ -114,12 +109,6 @@ public class ExchangeRateService {
         if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Invalid rate value");
         }
-    }
-
-    private void validateExchangeRatePairIsUnique(String normalizedBaseCode,
-                                                  String normalizedTargetCode) throws SQLException {
-        if (exchangeRateDao.findByPair(normalizedBaseCode, normalizedTargetCode).isPresent())
-            throw new ConflictException("Exchange rate already exists");
     }
 
     private String normalizeCode(String code) {

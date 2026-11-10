@@ -5,19 +5,23 @@ import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.ConflictException;
+import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.service.CurrencyService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(CurrenciesServlet.class);
 
     private final Gson gson = new Gson();
     private CurrencyService currencyService;
@@ -36,11 +40,21 @@ public class CurrenciesServlet extends HttpServlet {
 
         try {
             List<Currency> currencies = currencyService.findAll();
-            sendJsonResponse(gson.toJson(currencies), response, HttpServletResponse.SC_OK);
 
-        } catch (SQLException e) {
-            ErrorResponse errorResponse = new ErrorResponse("Internal server error");
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            sendJsonResponse(
+                    gson.toJson(currencies),
+                    response,
+                    HttpServletResponse.SC_OK
+            );
+
+        } catch (DatabaseException e) {
+            log.error("Failed to get currencies", e);
+
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse("Internal server error")),
+                    response,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -56,19 +70,35 @@ public class CurrenciesServlet extends HttpServlet {
 
         try {
             Currency currency = currencyService.insert(name, code, sign);
-            sendJsonResponse(gson.toJson(currency), response, HttpServletResponse.SC_CREATED);
+
+            sendJsonResponse(
+                    gson.toJson(currency),
+                    response,
+                    HttpServletResponse.SC_CREATED
+            );
 
         } catch (BadRequestException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_BAD_REQUEST);
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    response,
+                    HttpServletResponse.SC_BAD_REQUEST
+            );
 
         } catch (ConflictException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_CONFLICT);
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    response,
+                    HttpServletResponse.SC_CONFLICT
+            );
 
-        } catch (SQLException e) {
-            ErrorResponse errorResponse = new ErrorResponse("Internal server error");
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } catch (DatabaseException e) {
+            log.error("Failed to create currency", e);
+
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse("Internal server error")),
+                    response,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
         }
     }
 

@@ -1,7 +1,11 @@
 package com.meow.exchanger.dao;
 
+import com.meow.exchanger.exception.ConflictException;
+import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.util.ConnectionFactory;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,8 +18,9 @@ import java.util.Optional;
 
 public class CurrencyDao {
 
-    public List<Currency> findAll() throws SQLException {
+    public List<Currency> findAll() {
         String FIND_ALL_SQL = "SELECT ID, Code, FullName, Sign FROM Currencies ORDER BY Code";
+
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(FIND_ALL_SQL);
              ResultSet resultSet = statement.executeQuery()) {
@@ -27,11 +32,15 @@ public class CurrencyDao {
             }
 
             return currencies;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to load currencies", e);
         }
     }
 
-    public Optional<Currency> findByCode(String code) throws SQLException {
+    public Optional<Currency> findByCode(String code) {
         String FIND_BY_CODE_SQL = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
+
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE_SQL)) {
 
@@ -42,13 +51,17 @@ public class CurrencyDao {
                     return Optional.of(mapRow(resultSet));
                 }
             }
-        }
 
-        return Optional.empty();
+            return Optional.empty();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Failed to find currency", e);
+        }
     }
 
-    public Currency insert(Currency currency) throws SQLException {
+    public Currency insert(Currency currency) {
         String INSERT_SQL = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
+
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -66,6 +79,14 @@ public class CurrencyDao {
                     currency.getName(),
                     currency.getSign()
             );
+
+        } catch (SQLException exception) {
+            if (exception instanceof SQLiteException sqliteException
+                    && sqliteException.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE) {
+                throw new ConflictException("Currency with this code already exists");
+            }
+
+            throw new DatabaseException("Failed to insert currency", exception);
         }
     }
 

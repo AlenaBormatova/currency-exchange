@@ -6,6 +6,7 @@ import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.dto.ExchangeResponse;
 import com.meow.exchanger.exception.BadRequestException;
+import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.exception.NotFoundException;
 import com.meow.exchanger.service.ExchangeRateService;
 import com.meow.exchanger.service.ExchangeService;
@@ -13,13 +14,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {
+
+    private static final Logger log = LoggerFactory.getLogger(ExchangeServlet.class);
 
     private final Gson gson = new Gson();
     private ExchangeService exchangeService;
@@ -48,25 +52,43 @@ public class ExchangeServlet extends HttpServlet {
             }
 
             BigDecimal parsedAmount;
+
             try {
                 parsedAmount = new BigDecimal(amount);
             } catch (NumberFormatException e) {
                 throw new BadRequestException("Invalid amount");
             }
+
             ExchangeResponse exchangeResponse = exchangeService.exchange(from, to, parsedAmount);
-            sendJsonResponse(gson.toJson(exchangeResponse), response, HttpServletResponse.SC_OK);
+
+            sendJsonResponse(
+                    gson.toJson(exchangeResponse),
+                    response,
+                    HttpServletResponse.SC_OK
+            );
 
         } catch (BadRequestException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_BAD_REQUEST);
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    response,
+                    HttpServletResponse.SC_BAD_REQUEST
+            );
 
         } catch (NotFoundException e) {
-            ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_NOT_FOUND);
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    response,
+                    HttpServletResponse.SC_NOT_FOUND
+            );
 
-        } catch (SQLException e) {
-            ErrorResponse errorResponse = new ErrorResponse("Internal server error");
-            sendJsonResponse(gson.toJson(errorResponse), response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } catch (DatabaseException e) {
+            log.error("Failed to exchange currency", e);
+
+            sendJsonResponse(
+                    gson.toJson(new ErrorResponse("Internal server error")),
+                    response,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            );
         }
     }
 

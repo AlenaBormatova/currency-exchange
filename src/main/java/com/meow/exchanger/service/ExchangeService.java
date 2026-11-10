@@ -7,7 +7,6 @@ import com.meow.exchanger.model.ExchangeRate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.SQLException;
 import java.util.Optional;
 
 public class ExchangeService {
@@ -17,14 +16,14 @@ public class ExchangeService {
         this.exchangeRateService = exchangeRateService;
     }
 
-    public ExchangeResponse exchange(String fromCode, String toCode, BigDecimal amount) throws SQLException {
+    public ExchangeResponse exchange(String fromCode, String toCode, BigDecimal amount) {
 
         String currencyPair = fromCode + toCode;
 
-        Optional<ExchangeRate> exchangeRate = exchangeRateService.findByPair(currencyPair);
+        Optional<ExchangeRate> directRate = exchangeRateService.findByPair(currencyPair);
 
-        if (exchangeRate.isPresent()) {
-            return createDirectExchangeResponse(exchangeRate.get(), amount);
+        if (directRate.isPresent()) {
+            return createDirectExchangeResponse(directRate.get(), amount);
         }
 
         String reversePair = toCode + fromCode;

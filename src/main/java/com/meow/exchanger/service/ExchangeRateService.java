@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static com.meow.exchanger.service.CurrencyService.CURRENCY_CODE_PATTERN;
+import static com.meow.exchanger.util.CurrencyCodeValidator.normalize;
 
 public class ExchangeRateService {
 
@@ -51,8 +51,8 @@ public class ExchangeRateService {
     private ExchangeRate prepareExchangeRateForInsert(ExchangeRate exchangeRate) {
         validateExchangeRate(exchangeRate);
 
-        String normalizedBaseCode = normalizeCode(exchangeRate.getBaseCurrency().getCode());
-        String normalizedTargetCode = normalizeCode(exchangeRate.getTargetCurrency().getCode());
+        String normalizedBaseCode = normalize(exchangeRate.getBaseCurrency().getCode());
+        String normalizedTargetCode = normalize(exchangeRate.getTargetCurrency().getCode());
 
         validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
 
@@ -77,8 +77,8 @@ public class ExchangeRateService {
         String baseCode = currencyPair.substring(0, 3);
         String targetCode = currencyPair.substring(3, 6);
 
-        String normalizedBaseCode = normalizeCode(baseCode);
-        String normalizedTargetCode = normalizeCode(targetCode);
+        String normalizedBaseCode = normalize(baseCode);
+        String normalizedTargetCode = normalize(targetCode);
 
         validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
 
@@ -86,7 +86,7 @@ public class ExchangeRateService {
     }
 
     private Currency findRequiredCurrency(String code) {
-        String normalizedCode = normalizeCode(code);
+        String normalizedCode = normalize(code);
 
         return currencyDao.findByCode(normalizedCode)
                 .orElseThrow(() -> new NotFoundException("Currency not found"));
@@ -109,20 +109,6 @@ public class ExchangeRateService {
         if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Invalid rate value");
         }
-    }
-
-    private String normalizeCode(String code) {
-        if (code == null || code.isBlank()) {
-            throw new BadRequestException("Currency code is missing");
-        }
-
-        String normalizedCode = code.trim().toUpperCase();
-
-        if (!normalizedCode.matches(CURRENCY_CODE_PATTERN)) {
-            throw new BadRequestException("Currency code must consist of 3 Latin letters");
-        }
-
-        return normalizedCode;
     }
 
     private void validateDifferentCurrencies(String normalizedBaseCode, String normalizedTargetCode) {

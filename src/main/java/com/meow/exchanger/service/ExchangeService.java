@@ -1,6 +1,7 @@
 package com.meow.exchanger.service;
 
 import com.meow.exchanger.dto.ExchangeResponse;
+import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.NotFoundException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
@@ -8,6 +9,8 @@ import com.meow.exchanger.model.ExchangeRate;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
+
+import static com.meow.exchanger.util.CurrencyCodeValidator.normalize;
 
 public class ExchangeService {
     private final ExchangeRateService exchangeRateService;
@@ -17,6 +20,12 @@ public class ExchangeService {
     }
 
     public ExchangeResponse exchange(String fromCode, String toCode, BigDecimal amount) {
+        fromCode = normalize(fromCode);
+        toCode = normalize(toCode);
+
+        if (fromCode.equals(toCode)) {
+            throw new BadRequestException("Base and target currencies must be different");
+        }
 
         String currencyPair = fromCode + toCode;
 

@@ -41,9 +41,6 @@ public class ExchangeRateServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
         try {
             String pathInfo = request.getPathInfo();
 
@@ -88,9 +85,6 @@ public class ExchangeRateServlet extends HttpServlet {
     }
 
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
 
         try {
             String pathInfo = request.getPathInfo();

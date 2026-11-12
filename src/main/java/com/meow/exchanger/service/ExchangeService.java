@@ -21,6 +21,9 @@ public class ExchangeService {
     }
 
     public ExchangeResult exchange(String fromCode, String toCode, BigDecimal amount) {
+
+        validateAmount(amount);
+
         fromCode = normalize(fromCode);
         toCode = normalize(toCode);
 
@@ -131,5 +134,11 @@ public class ExchangeService {
                 amount,
                 convertedAmount
         );
+    }
+
+    private void validateAmount(BigDecimal amount) {
+        if (amount == null || amount.signum() <= 0) {
+            throw new BadRequestException("Amount must be positive");
+        }
     }
 }

@@ -16,7 +16,7 @@ import java.io.IOException;
         "/exchangeRate/*",
         "/exchange"
 })
-public class ResponseFilter extends HttpFilter {
+public class ContentTypeAndEncodingFilter extends HttpFilter {
 
     @Override
     protected void doFilter(

@@ -2,10 +2,12 @@ package com.meow.exchanger.servlet;
 
 import com.google.gson.Gson;
 import com.meow.exchanger.dao.CurrencyDao;
+import com.meow.exchanger.dto.CurrencyResponse;
 import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.ConflictException;
 import com.meow.exchanger.exception.DatabaseException;
+import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.service.CurrencyService;
 import jakarta.servlet.annotation.WebServlet;
@@ -41,8 +43,12 @@ public class CurrenciesServlet extends HttpServlet {
         try {
             List<Currency> currencies = currencyService.findAll();
 
+            List<CurrencyResponse> currencyResponses = currencies.stream()
+                    .map(ResponseMapper::toCurrencyResponse)
+                    .toList();
+
             sendJsonResponse(
-                    gson.toJson(currencies),
+                    gson.toJson(currencyResponses),
                     response,
                     HttpServletResponse.SC_OK
             );
@@ -71,8 +77,10 @@ public class CurrenciesServlet extends HttpServlet {
         try {
             Currency currency = currencyService.insert(name, code, sign);
 
+            CurrencyResponse currencyResponse = ResponseMapper.toCurrencyResponse(currency);
+
             sendJsonResponse(
-                    gson.toJson(currency),
+                    gson.toJson(currencyResponse),
                     response,
                     HttpServletResponse.SC_CREATED
             );

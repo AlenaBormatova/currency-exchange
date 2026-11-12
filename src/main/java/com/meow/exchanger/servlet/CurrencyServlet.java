@@ -6,6 +6,7 @@ import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.service.CurrencyService;
 import jakarta.servlet.annotation.WebServlet;
@@ -48,7 +49,7 @@ public class CurrencyServlet extends HttpServlet {
             Currency currency = currencyService.findByCode(code);
 
             sendJsonResponse(
-                    gson.toJson(currency),
+                    gson.toJson(ResponseMapper.toCurrencyResponse(currency)),
                     response,
                     HttpServletResponse.SC_OK
             );

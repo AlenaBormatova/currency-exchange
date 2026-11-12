@@ -7,6 +7,7 @@ import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
 import jakarta.servlet.ServletException;
@@ -56,7 +57,7 @@ public class ExchangeRateServlet extends HttpServlet {
                     .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
 
             sendJsonResponse(
-                    gson.toJson(exchangeRate),
+                    gson.toJson(ResponseMapper.toExchangeRateResponse(exchangeRate)),
                     response,
                     HttpServletResponse.SC_OK
             );
@@ -136,7 +137,7 @@ public class ExchangeRateServlet extends HttpServlet {
             ExchangeRate exchangeRate = exchangeRateService.updateRate(currencyPair, parsedRate);
 
             sendJsonResponse(
-                    gson.toJson(exchangeRate),
+                    gson.toJson(ResponseMapper.toExchangeRateResponse(exchangeRate)),
                     response,
                     HttpServletResponse.SC_OK
             );

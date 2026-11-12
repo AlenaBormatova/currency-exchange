@@ -8,6 +8,8 @@ import com.meow.exchanger.dto.ExchangeResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.mapper.ResponseMapper;
+import com.meow.exchanger.model.ExchangeResult;
 import com.meow.exchanger.service.ExchangeRateService;
 import com.meow.exchanger.service.ExchangeService;
 import jakarta.servlet.annotation.WebServlet;
@@ -59,7 +61,9 @@ public class ExchangeServlet extends HttpServlet {
                 throw new BadRequestException("Invalid amount");
             }
 
-            ExchangeResponse exchangeResponse = exchangeService.exchange(from, to, parsedAmount);
+            ExchangeResult result = exchangeService.exchange(from, to, parsedAmount);
+
+            ExchangeResponse exchangeResponse = ResponseMapper.toExchangeResponse(result);
 
             sendJsonResponse(
                     gson.toJson(exchangeResponse),

@@ -4,10 +4,12 @@ import com.google.gson.Gson;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.dto.ErrorResponse;
+import com.meow.exchanger.dto.ExchangeRateResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.ConflictException;
 import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
@@ -46,8 +48,12 @@ public class ExchangeRatesServlet extends HttpServlet {
         try {
             List<ExchangeRate> exchangeRates = exchangeRateService.findAll();
 
+            List<ExchangeRateResponse> exchangeRateResponses = exchangeRates.stream()
+                    .map(ResponseMapper::toExchangeRateResponse)
+                    .toList();
+
             sendJsonResponse(
-                    gson.toJson(exchangeRates),
+                    gson.toJson(exchangeRateResponses),
                     response,
                     HttpServletResponse.SC_OK
             );
@@ -92,8 +98,10 @@ public class ExchangeRatesServlet extends HttpServlet {
 
             ExchangeRate createdExchangeRate = exchangeRateService.insert(exchangeRate);
 
+            ExchangeRateResponse exchangeRateResponse = ResponseMapper.toExchangeRateResponse(createdExchangeRate);
+
             sendJsonResponse(
-                    gson.toJson(createdExchangeRate),
+                    gson.toJson(exchangeRateResponse),
                     response,
                     HttpServletResponse.SC_CREATED
             );

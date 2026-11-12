@@ -1,6 +1,5 @@
 package com.meow.exchanger.servlet;
 
-import com.google.gson.Gson;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.exception.BadRequestException;
@@ -18,12 +17,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+
 @WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
 
     private static final Logger log = LoggerFactory.getLogger(CurrencyServlet.class);
 
-    private final Gson gson = new Gson();
     private CurrencyService currencyService;
 
     @Override
@@ -43,24 +43,25 @@ public class CurrencyServlet extends HttpServlet {
             }
 
             String code = pathInfo.substring(1);
+
             Currency currency = currencyService.findByCode(code);
 
             sendJsonResponse(
-                    gson.toJson(ResponseMapper.toCurrencyResponse(currency)),
+                    ResponseMapper.toCurrencyResponse(currency),
                     response,
                     HttpServletResponse.SC_OK
             );
 
         } catch (BadRequestException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_BAD_REQUEST
             );
 
         } catch (NotFoundException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_NOT_FOUND
             );
@@ -69,15 +70,10 @@ public class CurrencyServlet extends HttpServlet {
             log.error("Failed to get currency", e);
 
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse("Internal server error")),
+                    new ErrorResponse("Internal server error"),
                     response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR
             );
         }
-    }
-
-    private void sendJsonResponse(String json, HttpServletResponse response, int status) throws IOException {
-        response.setStatus(status);
-        response.getWriter().write(json);
     }
 }

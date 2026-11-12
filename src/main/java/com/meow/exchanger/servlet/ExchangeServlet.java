@@ -1,10 +1,8 @@
 package com.meow.exchanger.servlet;
 
-import com.google.gson.Gson;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.dto.ErrorResponse;
-import com.meow.exchanger.dto.ExchangeResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.exception.NotFoundException;
@@ -22,12 +20,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {
 
     private static final Logger log = LoggerFactory.getLogger(ExchangeServlet.class);
 
-    private final Gson gson = new Gson();
     private ExchangeService exchangeService;
 
     @Override
@@ -60,24 +59,22 @@ public class ExchangeServlet extends HttpServlet {
 
             ExchangeResult result = exchangeService.exchange(from, to, parsedAmount);
 
-            ExchangeResponse exchangeResponse = ResponseMapper.toExchangeResponse(result);
-
             sendJsonResponse(
-                    gson.toJson(exchangeResponse),
+                    ResponseMapper.toExchangeResponse(result),
                     response,
                     HttpServletResponse.SC_OK
             );
 
         } catch (BadRequestException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_BAD_REQUEST
             );
 
         } catch (NotFoundException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_NOT_FOUND
             );
@@ -86,15 +83,10 @@ public class ExchangeServlet extends HttpServlet {
             log.error("Failed to exchange currency", e);
 
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse("Internal server error")),
+                    new ErrorResponse("Internal server error"),
                     response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR
             );
         }
-    }
-
-    private void sendJsonResponse(String json, HttpServletResponse response, int status) throws IOException {
-        response.setStatus(status);
-        response.getWriter().write(json);
     }
 }

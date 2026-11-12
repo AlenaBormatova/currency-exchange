@@ -1,6 +1,5 @@
 package com.meow.exchanger.servlet;
 
-import com.google.gson.Gson;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.dto.ErrorResponse;
@@ -23,12 +22,13 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
 
     private static final Logger log = LoggerFactory.getLogger(ExchangeRateServlet.class);
 
-    private final Gson gson = new Gson();
     private ExchangeRateService exchangeRateService;
 
     @Override
@@ -54,21 +54,21 @@ public class ExchangeRateServlet extends HttpServlet {
                     .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
 
             sendJsonResponse(
-                    gson.toJson(ResponseMapper.toExchangeRateResponse(exchangeRate)),
+                    ResponseMapper.toExchangeRateResponse(exchangeRate),
                     response,
                     HttpServletResponse.SC_OK
             );
 
         } catch (BadRequestException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_BAD_REQUEST
             );
 
         } catch (NotFoundException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_NOT_FOUND
             );
@@ -77,7 +77,7 @@ public class ExchangeRateServlet extends HttpServlet {
             log.error("Failed to get exchange rate", e);
 
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse("Internal server error")),
+                    new ErrorResponse("Internal server error"),
                     response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR
             );
@@ -131,21 +131,21 @@ public class ExchangeRateServlet extends HttpServlet {
             ExchangeRate exchangeRate = exchangeRateService.updateRate(currencyPair, parsedRate);
 
             sendJsonResponse(
-                    gson.toJson(ResponseMapper.toExchangeRateResponse(exchangeRate)),
+                    ResponseMapper.toExchangeRateResponse(exchangeRate),
                     response,
                     HttpServletResponse.SC_OK
             );
 
         } catch (BadRequestException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_BAD_REQUEST
             );
 
         } catch (NotFoundException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_NOT_FOUND
             );
@@ -154,7 +154,7 @@ public class ExchangeRateServlet extends HttpServlet {
             log.error("Failed to update exchange rate", e);
 
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse("Internal server error")),
+                    new ErrorResponse("Internal server error"),
                     response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR
             );
@@ -170,10 +170,5 @@ public class ExchangeRateServlet extends HttpServlet {
         } else {
             super.service(request, response);
         }
-    }
-
-    private void sendJsonResponse(String json, HttpServletResponse response, int status) throws IOException {
-        response.setStatus(status);
-        response.getWriter().write(json);
     }
 }

@@ -1,6 +1,5 @@
 package com.meow.exchanger.servlet;
 
-import com.google.gson.Gson;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dto.CurrencyResponse;
 import com.meow.exchanger.dto.ErrorResponse;
@@ -20,12 +19,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 
+import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
 
     private static final Logger log = LoggerFactory.getLogger(CurrenciesServlet.class);
 
-    private final Gson gson = new Gson();
     private CurrencyService currencyService;
 
     @Override
@@ -45,7 +45,7 @@ public class CurrenciesServlet extends HttpServlet {
                     .toList();
 
             sendJsonResponse(
-                    gson.toJson(currencyResponses),
+                    currencyResponses,
                     response,
                     HttpServletResponse.SC_OK
             );
@@ -54,7 +54,7 @@ public class CurrenciesServlet extends HttpServlet {
             log.error("Failed to get currencies", e);
 
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse("Internal server error")),
+                    new ErrorResponse("Internal server error"),
                     response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR
             );
@@ -74,21 +74,21 @@ public class CurrenciesServlet extends HttpServlet {
             CurrencyResponse currencyResponse = ResponseMapper.toCurrencyResponse(currency);
 
             sendJsonResponse(
-                    gson.toJson(currencyResponse),
+                    currencyResponse,
                     response,
                     HttpServletResponse.SC_CREATED
             );
 
         } catch (BadRequestException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_BAD_REQUEST
             );
 
         } catch (ConflictException e) {
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse(e.getMessage())),
+                    new ErrorResponse(e.getMessage()),
                     response,
                     HttpServletResponse.SC_CONFLICT
             );
@@ -97,15 +97,10 @@ public class CurrenciesServlet extends HttpServlet {
             log.error("Failed to create currency", e);
 
             sendJsonResponse(
-                    gson.toJson(new ErrorResponse("Internal server error")),
+                    new ErrorResponse("Internal server error"),
                     response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR
             );
         }
-    }
-
-    private void sendJsonResponse(String json, HttpServletResponse response, int status) throws IOException {
-        response.setStatus(status);
-        response.getWriter().write(json);
     }
 }

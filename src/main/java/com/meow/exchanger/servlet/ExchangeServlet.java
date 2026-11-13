@@ -2,10 +2,7 @@ package com.meow.exchanger.servlet;
 
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dao.ExchangeRateDao;
-import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.exception.BadRequestException;
-import com.meow.exchanger.exception.DatabaseException;
-import com.meow.exchanger.exception.NotFoundException;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.ExchangeResult;
 import com.meow.exchanger.service.ExchangeRateService;
@@ -14,8 +11,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -24,8 +19,6 @@ import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
 
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {
-
-    private static final Logger log = LoggerFactory.getLogger(ExchangeServlet.class);
 
     private ExchangeService exchangeService;
 
@@ -44,49 +37,24 @@ public class ExchangeServlet extends HttpServlet {
         String to = request.getParameter("to");
         String amount = request.getParameter("amount");
 
-        try {
-            if (amount == null || amount.isBlank()) {
-                throw new BadRequestException("Invalid amount");
-            }
-
-            BigDecimal parsedAmount;
-
-            try {
-                parsedAmount = new BigDecimal(amount);
-            } catch (NumberFormatException e) {
-                throw new BadRequestException("Invalid amount");
-            }
-
-            ExchangeResult result = exchangeService.exchange(from, to, parsedAmount);
-
-            sendJsonResponse(
-                    ResponseMapper.toExchangeResponse(result),
-                    response,
-                    HttpServletResponse.SC_OK
-            );
-
-        } catch (BadRequestException e) {
-            sendJsonResponse(
-                    new ErrorResponse(e.getMessage()),
-                    response,
-                    HttpServletResponse.SC_BAD_REQUEST
-            );
-
-        } catch (NotFoundException e) {
-            sendJsonResponse(
-                    new ErrorResponse(e.getMessage()),
-                    response,
-                    HttpServletResponse.SC_NOT_FOUND
-            );
-
-        } catch (DatabaseException e) {
-            log.error("Failed to exchange currency", e);
-
-            sendJsonResponse(
-                    new ErrorResponse("Internal server error"),
-                    response,
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR
-            );
+        if (amount == null || amount.isBlank()) {
+            throw new BadRequestException("Invalid amount");
         }
+
+        BigDecimal parsedAmount;
+
+        try {
+            parsedAmount = new BigDecimal(amount);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException("Invalid amount");
+        }
+
+        ExchangeResult result = exchangeService.exchange(from, to, parsedAmount);
+
+        sendJsonResponse(
+                ResponseMapper.toExchangeResponse(result),
+                response,
+                HttpServletResponse.SC_OK
+        );
     }
 }

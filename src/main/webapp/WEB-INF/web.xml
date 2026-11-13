@@ -12,4 +12,32 @@
         <listener-class>com.meow.exchanger.util.AppContextListener</listener-class>
     </listener>
 
+    <filter>
+        <filter-name>ExceptionHandlingFilter</filter-name>
+        <filter-class>com.meow.exchanger.filter.ExceptionHandlingFilter</filter-class>
+    </filter>
+
+    <filter>
+        <filter-name>ContentTypeAndEncodingFilter</filter-name>
+        <filter-class>com.meow.exchanger.filter.ContentTypeAndEncodingFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>ExceptionHandlingFilter</filter-name>
+        <url-pattern>/currencies</url-pattern>
+        <url-pattern>/currency/*</url-pattern>
+        <url-pattern>/exchangeRates</url-pattern>
+        <url-pattern>/exchangeRate/*</url-pattern>
+        <url-pattern>/exchange</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>ContentTypeAndEncodingFilter</filter-name>
+        <url-pattern>/currencies</url-pattern>
+        <url-pattern>/currency/*</url-pattern>
+        <url-pattern>/exchangeRates</url-pattern>
+        <url-pattern>/exchangeRate/*</url-pattern>
+        <url-pattern>/exchange</url-pattern>
+    </filter-mapping>
+
 </web-app>

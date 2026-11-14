@@ -5,7 +5,6 @@ import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.dto.ExchangeRateResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.mapper.ResponseMapper;
-import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
 import jakarta.servlet.annotation.WebServlet;
@@ -66,16 +65,14 @@ public class ExchangeRatesServlet extends HttpServlet {
             throw new BadRequestException("Invalid rate");
         }
 
-        Currency baseCurrency = new Currency(null, baseCurrencyCode, null, null);
-        Currency targetCurrency = new Currency(null, targetCurrencyCode, null, null);
-        ExchangeRate exchangeRate = new ExchangeRate(null, baseCurrency, targetCurrency, parsedRate);
-
-        ExchangeRate createdExchangeRate = exchangeRateService.insert(exchangeRate);
-
-        ExchangeRateResponse exchangeRateResponse = ResponseMapper.toExchangeRateResponse(createdExchangeRate);
+        ExchangeRate createdExchangeRate = exchangeRateService.insert(
+                baseCurrencyCode,
+                targetCurrencyCode,
+                parsedRate
+        );
 
         sendJsonResponse(
-                exchangeRateResponse,
+                ResponseMapper.toExchangeRateResponse(createdExchangeRate),
                 response,
                 HttpServletResponse.SC_CREATED
         );

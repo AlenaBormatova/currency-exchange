@@ -33,10 +33,22 @@ public class ExchangeRateService {
         return exchangeRateDao.findByPair(pair.baseCode(), pair.targetCode());
     }
 
-    public ExchangeRate insert(ExchangeRate exchangeRate) {
-        ExchangeRate newExchangeRate = prepareExchangeRateForInsert(exchangeRate);
+    public ExchangeRate insert(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
 
-        return exchangeRateDao.insert(newExchangeRate);
+        String normalizedBaseCode = normalize(baseCurrencyCode);
+        String normalizedTargetCode = normalize(targetCurrencyCode);
+
+        validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
+
+        validateRate(rate);
+
+        ExchangeRate exchangeRate = prepareExchangeRateForInsert(
+                normalizedBaseCode,
+                normalizedTargetCode,
+                rate
+        );
+
+        return exchangeRateDao.insert(exchangeRate);
     }
 
     public ExchangeRate updateRate(String currencyPair, BigDecimal rate) {
@@ -48,18 +60,13 @@ public class ExchangeRateService {
                 .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
     }
 
-    private ExchangeRate prepareExchangeRateForInsert(ExchangeRate exchangeRate) {
-        validateExchangeRate(exchangeRate);
-
-        String normalizedBaseCode = normalize(exchangeRate.getBaseCurrency().getCode());
-        String normalizedTargetCode = normalize(exchangeRate.getTargetCurrency().getCode());
-
-        validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
-
-        BigDecimal rate = exchangeRate.getRate();
-
-        Currency baseCurrency = findRequiredCurrency(normalizedBaseCode);
-        Currency targetCurrency = findRequiredCurrency(normalizedTargetCode);
+    private ExchangeRate prepareExchangeRateForInsert(
+            String baseCurrencyCode,
+            String targetCurrencyCode,
+            BigDecimal rate
+    ) {
+        Currency baseCurrency = findRequiredCurrency(baseCurrencyCode);
+        Currency targetCurrency = findRequiredCurrency(targetCurrencyCode);
 
         return new ExchangeRate(
                 null,
@@ -86,23 +93,8 @@ public class ExchangeRateService {
     }
 
     private Currency findRequiredCurrency(String code) {
-        String normalizedCode = normalize(code);
-
-        return currencyDao.findByCode(normalizedCode)
+        return currencyDao.findByCode(code)
                 .orElseThrow(() -> new NotFoundException("Currency not found"));
-    }
-
-
-    private void validateExchangeRate(ExchangeRate exchangeRate) {
-        if (exchangeRate == null) {
-            throw new BadRequestException("Exchange rate is missing");
-        }
-
-        if (exchangeRate.getBaseCurrency() == null || exchangeRate.getTargetCurrency() == null) {
-            throw new BadRequestException("Currency is missing");
-        }
-
-        validateRate(exchangeRate.getRate());
     }
 
     private void validateRate(BigDecimal rate) {

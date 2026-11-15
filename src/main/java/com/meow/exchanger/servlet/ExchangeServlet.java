@@ -2,6 +2,8 @@ package com.meow.exchanger.servlet;
 
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dao.ExchangeRateDao;
+import com.meow.exchanger.dao.impl.CurrencyDaoImpl;
+import com.meow.exchanger.dao.impl.ExchangeRateDaoImpl;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.ExchangeResult;
@@ -24,8 +26,8 @@ public class ExchangeServlet extends HttpServlet {
 
     @Override
     public void init() {
-        ExchangeRateDao exchangeRateDao = new ExchangeRateDao();
-        CurrencyDao currencyDao = new CurrencyDao();
+        ExchangeRateDao exchangeRateDao = new ExchangeRateDaoImpl();
+        CurrencyDao currencyDao = new CurrencyDaoImpl();
         ExchangeRateService exchangeRateService = new ExchangeRateService(exchangeRateDao, currencyDao);
         exchangeService = new ExchangeService(exchangeRateService);
     }

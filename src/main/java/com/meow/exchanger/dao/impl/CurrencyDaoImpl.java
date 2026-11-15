@@ -21,10 +21,10 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     @Override
     public List<Currency> findAll() {
-        String FIND_ALL_SQL = "SELECT ID, Code, FullName, Sign FROM Currencies ORDER BY Code";
+        String findAllSql = "SELECT ID, Code, FullName, Sign FROM Currencies ORDER BY Code";
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_ALL_SQL);
+             PreparedStatement statement = connection.prepareStatement(findAllSql);
              ResultSet resultSet = statement.executeQuery()) {
 
             List<Currency> currencies = new ArrayList<>();
@@ -42,10 +42,10 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     @Override
     public Optional<Currency> findByCode(String code) {
-        String FIND_BY_CODE_SQL = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
+        String findByCodeSql = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE_SQL)) {
+             PreparedStatement statement = connection.prepareStatement(findByCodeSql)) {
 
             statement.setString(1, code);
 
@@ -64,10 +64,10 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     @Override
     public Currency insert(Currency currency) {
-        String INSERT_SQL = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
+        String insertSql = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, currency.getCode());
             statement.setString(2, currency.getName());

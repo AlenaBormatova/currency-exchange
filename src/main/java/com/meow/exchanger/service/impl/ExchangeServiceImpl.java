@@ -2,7 +2,6 @@ package com.meow.exchanger.service.impl;
 
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.NotFoundException;
-import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.model.ExchangeResult;
 import com.meow.exchanger.service.ExchangeRateService;
@@ -15,6 +14,13 @@ import java.util.Optional;
 import static com.meow.exchanger.util.CurrencyCodeValidator.normalize;
 
 public class ExchangeServiceImpl implements ExchangeService {
+
+    private static final int MONEY_SCALE = 2;
+    private static final int RATE_SCALE = 6;
+
+    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
+
+    private static final String REFERENCE_CURRENCY_CODE = "USD";
 
     private final ExchangeRateService exchangeRateService;
 
@@ -50,51 +56,69 @@ public class ExchangeServiceImpl implements ExchangeService {
             return createInverseExchangeResult(reverseRate.get(), amount);
         }
 
-        if (fromCode.equals("USD") || toCode.equals("USD")) {
+        if (fromCode.equals(REFERENCE_CURRENCY_CODE) || toCode.equals(REFERENCE_CURRENCY_CODE)) {
             throw new NotFoundException("Exchange rate not found");
         }
 
-        String usdToBasePair = "USD" + fromCode;
-        String usdToTargetPair = "USD" + toCode;
+        String usdToBasePair = REFERENCE_CURRENCY_CODE + fromCode;
+        String usdToTargetPair = REFERENCE_CURRENCY_CODE + toCode;
 
-        Optional<ExchangeRate> usdToBaseRate = exchangeRateService.findByPair(usdToBasePair);
-        Optional<ExchangeRate> usdToTargetRate = exchangeRateService.findByPair(usdToTargetPair);
+        ExchangeRate usdToBaseRate = exchangeRateService.findByPair(usdToBasePair)
+                .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
 
-        if (usdToBaseRate.isPresent() && usdToTargetRate.isPresent()) {
-            return createCrossExchangeResult(
-                    usdToBaseRate.get(),
-                    usdToTargetRate.get(),
-                    amount
-            );
-        }
+        ExchangeRate usdToTargetRate = exchangeRateService.findByPair(usdToTargetPair)
+                .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
 
-        throw new NotFoundException("Exchange rate not found");
-    }
-
-    private ExchangeResult createDirectExchangeResult(ExchangeRate exchangeRate, BigDecimal amount) {
-
-        return createExchangeResult(
-                exchangeRate.getBaseCurrency(),
-                exchangeRate.getTargetCurrency(),
-                exchangeRate.getRate(),
+        return createCrossExchangeResult(
+                usdToBaseRate,
+                usdToTargetRate,
                 amount
         );
     }
 
-    private ExchangeResult createInverseExchangeResult(ExchangeRate exchangeRate, BigDecimal amount) {
+    private ExchangeResult createDirectExchangeResult(
+            ExchangeRate exchangeRate,
+            BigDecimal amount
+    ) {
         BigDecimal rate = exchangeRate.getRate();
 
-        BigDecimal directRate = BigDecimal.ONE.divide(
+        BigDecimal convertedAmount = amount
+                .multiply(rate)
+                .setScale(MONEY_SCALE, ROUNDING_MODE);
+
+        return new ExchangeResult(
+                exchangeRate.getBaseCurrency(),
+                exchangeRate.getTargetCurrency(),
                 rate,
-                6,
-                RoundingMode.HALF_EVEN
+                amount,
+                convertedAmount
+        );
+    }
+
+    private ExchangeResult createInverseExchangeResult(
+            ExchangeRate exchangeRate,
+            BigDecimal amount
+    ) {
+        BigDecimal rate = exchangeRate.getRate();
+
+        BigDecimal calculatedRate = BigDecimal.ONE.divide(
+                rate,
+                RATE_SCALE,
+                ROUNDING_MODE
         );
 
-        return createExchangeResult(
+        BigDecimal convertedAmount = amount.divide(
+                rate,
+                MONEY_SCALE,
+                ROUNDING_MODE
+        );
+
+        return new ExchangeResult(
                 exchangeRate.getTargetCurrency(),
                 exchangeRate.getBaseCurrency(),
-                directRate,
-                amount
+                calculatedRate,
+                amount,
+                convertedAmount
         );
     }
 
@@ -103,38 +127,27 @@ public class ExchangeServiceImpl implements ExchangeService {
             ExchangeRate usdToTargetRate,
             BigDecimal amount
     ) {
-
         BigDecimal rateBase = usdToBaseRate.getRate();
         BigDecimal rateTarget = usdToTargetRate.getRate();
 
-        BigDecimal directRate = rateTarget.divide(
+        BigDecimal calculatedRate = rateTarget.divide(
                 rateBase,
-                6,
-                RoundingMode.HALF_EVEN
+                RATE_SCALE,
+                ROUNDING_MODE
         );
 
-        return createExchangeResult(
-                usdToBaseRate.getTargetCurrency(),
-                usdToTargetRate.getTargetCurrency(),
-                directRate,
-                amount
-        );
-    }
-
-    private ExchangeResult createExchangeResult(
-            Currency baseCurrency,
-            Currency targetCurrency,
-            BigDecimal rate,
-            BigDecimal amount
-    ) {
         BigDecimal convertedAmount = amount
-                .multiply(rate)
-                .setScale(2, RoundingMode.HALF_EVEN);
+                .multiply(rateTarget)
+                .divide(
+                        rateBase,
+                        MONEY_SCALE,
+                        ROUNDING_MODE
+                );
 
         return new ExchangeResult(
-                baseCurrency,
-                targetCurrency,
-                rate,
+                usdToBaseRate.getTargetCurrency(),
+                usdToTargetRate.getTargetCurrency(),
+                calculatedRate,
                 amount,
                 convertedAmount
         );

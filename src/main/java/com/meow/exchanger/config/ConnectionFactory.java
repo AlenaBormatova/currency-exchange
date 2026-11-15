@@ -1,4 +1,4 @@
-package com.meow.exchanger.util;
+package com.meow.exchanger.config;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -30,11 +30,8 @@ public final class ConnectionFactory {
         config.setPoolName("CurrencyExchangeHikariPool");
 
         config.setMaximumPoolSize(1);
-        config.setMinimumIdle(1);
 
         config.setConnectionTimeout(10_000);
-        config.setMaxLifetime(300_000);
-
         config.setConnectionInitSql("PRAGMA foreign_keys = ON");
 
         dataSource = new HikariDataSource(config);

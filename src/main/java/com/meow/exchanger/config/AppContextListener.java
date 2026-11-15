@@ -1,4 +1,4 @@
-package com.meow.exchanger.util;
+package com.meow.exchanger.config;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;

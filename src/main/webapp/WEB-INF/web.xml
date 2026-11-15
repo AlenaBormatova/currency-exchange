@@ -9,7 +9,7 @@
     <display-name>Currency Exchange</display-name>
 
     <listener>
-        <listener-class>com.meow.exchanger.util.AppContextListener</listener-class>
+        <listener-class>com.meow.exchanger.config.AppContextListener</listener-class>
     </listener>
 
     <filter>

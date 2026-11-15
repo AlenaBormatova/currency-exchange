@@ -1,11 +1,11 @@
 package com.meow.exchanger.dao.impl;
 
+import com.meow.exchanger.config.ConnectionFactory;
 import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.exception.ConflictException;
 import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
-import com.meow.exchanger.util.ConnectionFactory;
 import org.sqlite.SQLiteErrorCode;
 import org.sqlite.SQLiteException;
 

@@ -64,7 +64,8 @@ public class ExchangeServiceImpl implements ExchangeService {
             return createCrossExchangeResult(
                     usdToBaseRate.get(),
                     usdToTargetRate.get(),
-                    amount);
+                    amount
+            );
         }
 
         throw new NotFoundException("Exchange rate not found");

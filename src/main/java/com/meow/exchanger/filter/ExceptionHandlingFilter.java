@@ -34,7 +34,8 @@ public class ExceptionHandlingFilter extends HttpFilter {
             sendError(
                     response,
                     HttpServletResponse.SC_BAD_REQUEST,
-                    e.getMessage());
+                    e.getMessage()
+            );
 
         } catch (NotFoundException e) {
             sendError(
@@ -52,7 +53,8 @@ public class ExceptionHandlingFilter extends HttpFilter {
 
         } catch (DatabaseException e) {
             log.error("Database error", e);
-            sendError(response,
+            sendError(
+                    response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Internal server error"
             );

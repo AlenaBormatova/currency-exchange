@@ -66,6 +66,29 @@ public class ExchangeRateServlet extends HttpServlet {
 
         String currencyPair = pathInfo.substring(1);
 
+        BigDecimal parsedRate = parseRateFromRequest(request);
+
+        ExchangeRate exchangeRate = exchangeRateService.updateRate(currencyPair, parsedRate);
+
+        sendJsonResponse(
+                ResponseMapper.toExchangeRateResponse(exchangeRate),
+                response,
+                HttpServletResponse.SC_OK
+        );
+    }
+
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        if ("PATCH".equals(request.getMethod())) {
+            doPatch(request, response);
+        } else {
+            super.service(request, response);
+        }
+    }
+
+    private BigDecimal parseRateFromRequest(HttpServletRequest request) throws IOException {
         BigDecimal parsedRate = null;
 
         String requestBody = request.getReader().readLine();
@@ -98,24 +121,6 @@ public class ExchangeRateServlet extends HttpServlet {
         if (parsedRate == null) {
             throw new BadRequestException("Invalid rate");
         }
-
-        ExchangeRate exchangeRate = exchangeRateService.updateRate(currencyPair, parsedRate);
-
-        sendJsonResponse(
-                ResponseMapper.toExchangeRateResponse(exchangeRate),
-                response,
-                HttpServletResponse.SC_OK
-        );
-    }
-
-    @Override
-    protected void service(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        if ("PATCH".equals(request.getMethod())) {
-            doPatch(request, response);
-        } else {
-            super.service(request, response);
-        }
+        return parsedRate;
     }
 }

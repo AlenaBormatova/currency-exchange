@@ -6,6 +6,7 @@ import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.service.CurrencyService;
+import com.meow.exchanger.service.impl.CurrencyServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +24,7 @@ public class CurrencyServlet extends HttpServlet {
     @Override
     public void init() {
         CurrencyDao currencyDao = new CurrencyDaoImpl();
-        currencyService = new CurrencyService(currencyDao);
+        currencyService = new CurrencyServiceImpl(currencyDao);
     }
 
     @Override

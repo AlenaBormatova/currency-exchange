@@ -9,6 +9,7 @@ import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
+import com.meow.exchanger.service.impl.ExchangeRateServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +30,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     public void init() {
         CurrencyDao currencyDao = new CurrencyDaoImpl();
         ExchangeRateDao exchangeRateDao = new ExchangeRateDaoImpl();
-        exchangeRateService = new ExchangeRateService(exchangeRateDao, currencyDao);
+        exchangeRateService = new ExchangeRateServiceImpl(exchangeRateDao, currencyDao);
     }
 
     @Override

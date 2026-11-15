@@ -9,6 +9,8 @@ import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.ExchangeResult;
 import com.meow.exchanger.service.ExchangeRateService;
 import com.meow.exchanger.service.ExchangeService;
+import com.meow.exchanger.service.impl.ExchangeRateServiceImpl;
+import com.meow.exchanger.service.impl.ExchangeServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,8 +30,8 @@ public class ExchangeServlet extends HttpServlet {
     public void init() {
         ExchangeRateDao exchangeRateDao = new ExchangeRateDaoImpl();
         CurrencyDao currencyDao = new CurrencyDaoImpl();
-        ExchangeRateService exchangeRateService = new ExchangeRateService(exchangeRateDao, currencyDao);
-        exchangeService = new ExchangeService(exchangeRateService);
+        ExchangeRateService exchangeRateService = new ExchangeRateServiceImpl(exchangeRateDao, currencyDao);
+        exchangeService = new ExchangeServiceImpl(exchangeRateService);
     }
 
     @Override

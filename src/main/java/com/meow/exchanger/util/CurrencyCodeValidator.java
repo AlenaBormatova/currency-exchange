@@ -2,8 +2,6 @@ package com.meow.exchanger.util;
 
 import com.meow.exchanger.exception.BadRequestException;
 
-import java.util.Locale;
-
 public final class CurrencyCodeValidator {
 
     private static final String CURRENCY_CODE_PATTERN = "[A-Z]{3}";
@@ -16,13 +14,13 @@ public final class CurrencyCodeValidator {
             throw new BadRequestException("Currency code is required");
         }
 
-        String normalizedCode = code.trim().toUpperCase(Locale.ROOT);
-
-        if (!normalizedCode.matches(CURRENCY_CODE_PATTERN)) {
-            throw new BadRequestException("Currency code must consist of 3 Latin letters");
+        if (!code.matches(CURRENCY_CODE_PATTERN)) {
+            throw new BadRequestException(
+                    "Currency code must consist of 3 uppercase Latin letters"
+            );
         }
 
-        return normalizedCode;
+        return code;
     }
 
     public static void validateDifferentCurrencies(String baseCode, String targetCode) {

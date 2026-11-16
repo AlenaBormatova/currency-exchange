@@ -153,8 +153,8 @@ public class ExchangeServiceImpl implements ExchangeService {
     }
 
     private void validateAmount(BigDecimal amount) {
-        if (amount == null || amount.signum() <= 0) {
-            throw new BadRequestException("Amount must be positive");
+        if (amount == null || amount.signum() < 0) {
+            throw new BadRequestException("Amount must not be negative");
         }
     }
 }

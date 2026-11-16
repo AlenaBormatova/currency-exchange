@@ -21,7 +21,7 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     @Override
     public List<Currency> findAll() {
-        String findAllSql = "SELECT ID, Code, FullName, Sign FROM Currencies ORDER BY Code";
+        String findAllSql = "SELECT id, code, full_name, sign FROM currencies ORDER BY code";
 
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(findAllSql);
@@ -42,7 +42,7 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     @Override
     public Optional<Currency> findByCode(String code) {
-        String findByCodeSql = "SELECT ID, Code, FullName, Sign FROM Currencies WHERE Code = ?";
+        String findByCodeSql = "SELECT id, code, full_name, sign FROM currencies WHERE code = ?";
 
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(findByCodeSql)) {
@@ -64,7 +64,7 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     @Override
     public Currency insert(Currency currency) {
-        String insertSql = "INSERT INTO Currencies (Code, FullName, Sign) VALUES (?, ?, ?)";
+        String insertSql = "INSERT INTO currencies (code, full_name, sign) VALUES (?, ?, ?)";
 
         try (Connection connection = ConnectionFactory.getConnection();
              PreparedStatement statement = connection.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
@@ -106,10 +106,10 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     private Currency mapRow(ResultSet resultSet) throws SQLException {
         return new Currency(
-                resultSet.getInt("ID"),
-                resultSet.getString("Code"),
-                resultSet.getString("FullName"),
-                resultSet.getString("Sign")
+                resultSet.getInt("id"),
+                resultSet.getString("code"),
+                resultSet.getString("full_name"),
+                resultSet.getString("sign")
         );
     }
 }

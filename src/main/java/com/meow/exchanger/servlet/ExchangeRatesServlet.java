@@ -1,15 +1,10 @@
 package com.meow.exchanger.servlet;
 
-import com.meow.exchanger.dao.CurrencyDao;
-import com.meow.exchanger.dao.ExchangeRateDao;
-import com.meow.exchanger.dao.impl.CurrencyDaoImpl;
-import com.meow.exchanger.dao.impl.ExchangeRateDaoImpl;
 import com.meow.exchanger.dto.ExchangeRateResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
-import com.meow.exchanger.service.impl.ExchangeRateServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,9 +23,7 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     public void init() {
-        CurrencyDao currencyDao = new CurrencyDaoImpl();
-        ExchangeRateDao exchangeRateDao = new ExchangeRateDaoImpl();
-        exchangeRateService = new ExchangeRateServiceImpl(exchangeRateDao, currencyDao);
+        exchangeRateService = (ExchangeRateService) getServletContext().getAttribute("exchangeRateService");
     }
 
     @Override

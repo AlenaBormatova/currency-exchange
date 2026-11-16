@@ -1,12 +1,9 @@
 package com.meow.exchanger.servlet;
 
-import com.meow.exchanger.dao.CurrencyDao;
-import com.meow.exchanger.dao.impl.CurrencyDaoImpl;
 import com.meow.exchanger.dto.CurrencyResponse;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.service.CurrencyService;
-import com.meow.exchanger.service.impl.CurrencyServiceImpl;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,8 +21,7 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     public void init() {
-        CurrencyDao currencyDao = new CurrencyDaoImpl();
-        currencyService = new CurrencyServiceImpl(currencyDao);
+        currencyService = (CurrencyService) getServletContext().getAttribute("currencyService");
     }
 
     @Override

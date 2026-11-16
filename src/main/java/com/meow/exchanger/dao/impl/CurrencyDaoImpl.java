@@ -19,12 +19,28 @@ import java.util.Optional;
 
 public class CurrencyDaoImpl implements CurrencyDao {
 
+    private static final String FIND_ALL_SQL = """
+            SELECT id, code, full_name, sign
+            FROM currencies
+            ORDER BY code
+            """;
+
+    private static final String FIND_BY_CODE_SQL = """
+            SELECT id, code, full_name, sign
+            FROM currencies
+            WHERE code = ?
+            """;
+
+    private static final String INSERT_SQL = """
+            INSERT INTO currencies (code, full_name, sign)
+            VALUES (?, ?, ?)
+            """;
+
     @Override
     public List<Currency> findAll() {
-        String findAllSql = "SELECT id, code, full_name, sign FROM currencies ORDER BY code";
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(findAllSql);
+             PreparedStatement statement = connection.prepareStatement(FIND_ALL_SQL);
              ResultSet resultSet = statement.executeQuery()) {
 
             List<Currency> currencies = new ArrayList<>();
@@ -42,10 +58,9 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     @Override
     public Optional<Currency> findByCode(String code) {
-        String findByCodeSql = "SELECT id, code, full_name, sign FROM currencies WHERE code = ?";
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(findByCodeSql)) {
+             PreparedStatement statement = connection.prepareStatement(FIND_BY_CODE_SQL)) {
 
             statement.setString(1, code);
 
@@ -64,10 +79,9 @@ public class CurrencyDaoImpl implements CurrencyDao {
 
     @Override
     public Currency insert(Currency currency) {
-        String insertSql = "INSERT INTO currencies (code, full_name, sign) VALUES (?, ?, ?)";
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             statement.setString(1, currency.getCode());
             statement.setString(2, currency.getName());

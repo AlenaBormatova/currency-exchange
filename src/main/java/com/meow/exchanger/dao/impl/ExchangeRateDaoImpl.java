@@ -41,12 +41,33 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
             JOIN currencies tc ON er.target_currency_id = tc.id
             """;
 
+    private static final String FIND_ALL_SQL =
+            SELECT_WITH_CURRENCIES + """
+                    ORDER BY bc.code, tc.code
+                    """;
+
+    private static final String FIND_BY_PAIR_CODES_SQL = SELECT_WITH_CURRENCIES + """
+            WHERE bc.code = ?
+              AND tc.code = ?
+            """;
+
+    private static final String INSERT_SQL = """
+            INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate)
+            VALUES (?, ?, ?)
+            """;
+
+    private static final String UPDATE_RATE_SQL = """
+            UPDATE exchange_rates
+            SET rate = ?
+            WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?)
+              AND target_currency_id = (SELECT id FROM currencies WHERE code = ?)
+            """;
+
     @Override
     public List<ExchangeRate> findAll() {
-        String findAllSql = SELECT_WITH_CURRENCIES + " ORDER BY bc.code, tc.code";
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(findAllSql);
+             PreparedStatement statement = connection.prepareStatement(FIND_ALL_SQL);
              ResultSet resultSet = statement.executeQuery()) {
 
             List<ExchangeRate> exchangeRates = new ArrayList<>();
@@ -64,13 +85,9 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
 
     @Override
     public Optional<ExchangeRate> findByPair(String baseCode, String targetCode) {
-        String findByPairCodesSql = SELECT_WITH_CURRENCIES + """
-                WHERE bc.code = ?
-                  AND tc.code = ?
-                """;
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(findByPairCodesSql)) {
+             PreparedStatement statement = connection.prepareStatement(FIND_BY_PAIR_CODES_SQL)) {
 
             statement.setString(1, baseCode);
             statement.setString(2, targetCode);
@@ -90,13 +107,9 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
 
     @Override
     public ExchangeRate insert(ExchangeRate exchangeRate) {
-        String insertSql = """
-                INSERT INTO exchange_rates (base_currency_id, target_currency_id, rate)
-                VALUES (?, ?, ?)
-                """;
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement statement = connection.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 
             statement.setInt(1, exchangeRate.getBaseCurrency().getId());
             statement.setInt(2, exchangeRate.getTargetCurrency().getId());
@@ -125,15 +138,9 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
 
     @Override
     public Optional<ExchangeRate> updateRate(String baseCode, String targetCode, BigDecimal rate) {
-        String updateRateSql = """
-                UPDATE exchange_rates
-                SET rate = ?
-                WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?)
-                  AND target_currency_id = (SELECT id FROM currencies WHERE code = ?)
-                """;
 
         try (Connection connection = ConnectionFactory.getConnection();
-             PreparedStatement statement = connection.prepareStatement(updateRateSql)) {
+             PreparedStatement statement = connection.prepareStatement(UPDATE_RATE_SQL)) {
 
             statement.setBigDecimal(1, rate);
             statement.setString(2, baseCode);

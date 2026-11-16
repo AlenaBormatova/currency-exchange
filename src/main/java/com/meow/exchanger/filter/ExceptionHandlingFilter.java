@@ -31,41 +31,21 @@ public class ExceptionHandlingFilter extends HttpFilter {
             chain.doFilter(request, response);
 
         } catch (BadRequestException e) {
-            sendError(
-                    response,
-                    HttpServletResponse.SC_BAD_REQUEST,
-                    e.getMessage()
-            );
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
         } catch (NotFoundException e) {
-            sendError(
-                    response,
-                    HttpServletResponse.SC_NOT_FOUND,
-                    e.getMessage()
-            );
+            sendError(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
         } catch (ConflictException e) {
-            sendError(
-                    response,
-                    HttpServletResponse.SC_CONFLICT,
-                    e.getMessage()
-            );
+            sendError(response, HttpServletResponse.SC_CONFLICT, e.getMessage());
 
         } catch (DatabaseException e) {
             log.error("Database error", e);
-            sendError(
-                    response,
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Internal server error"
-            );
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
 
         } catch (Exception e) {
             log.error("Unexpected error", e);
-            sendError(
-                    response,
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Internal server error"
-            );
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
         }
     }
 
@@ -83,10 +63,6 @@ public class ExceptionHandlingFilter extends HttpFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        sendJsonResponse(
-                new ErrorResponse(message),
-                response,
-                status
-        );
+        sendJsonResponse(new ErrorResponse(message), response, status);
     }
 }

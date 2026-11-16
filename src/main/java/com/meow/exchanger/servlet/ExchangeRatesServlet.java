@@ -35,11 +35,7 @@ public class ExchangeRatesServlet extends HttpServlet {
                 .map(ResponseMapper::toExchangeRateResponse)
                 .toList();
 
-        sendJsonResponse(
-                exchangeRateResponses,
-                response,
-                HttpServletResponse.SC_OK
-        );
+        sendJsonResponse(exchangeRateResponses, response, HttpServletResponse.SC_OK);
     }
 
     @Override

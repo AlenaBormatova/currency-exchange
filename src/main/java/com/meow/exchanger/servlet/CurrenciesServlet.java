@@ -33,11 +33,7 @@ public class CurrenciesServlet extends HttpServlet {
                 .map(ResponseMapper::toCurrencyResponse)
                 .toList();
 
-        sendJsonResponse(
-                currencyResponses,
-                response,
-                HttpServletResponse.SC_OK
-        );
+        sendJsonResponse(currencyResponses, response, HttpServletResponse.SC_OK);
     }
 
     @Override
@@ -51,10 +47,6 @@ public class CurrenciesServlet extends HttpServlet {
 
         CurrencyResponse currencyResponse = ResponseMapper.toCurrencyResponse(currency);
 
-        sendJsonResponse(
-                currencyResponse,
-                response,
-                HttpServletResponse.SC_CREATED
-        );
+        sendJsonResponse(currencyResponse, response, HttpServletResponse.SC_CREATED);
     }
 }

@@ -12,6 +12,7 @@ import java.math.RoundingMode;
 import java.util.Optional;
 
 import static com.meow.exchanger.util.CurrencyCodeValidator.normalize;
+import static com.meow.exchanger.util.CurrencyCodeValidator.validateDifferentCurrencies;
 
 public class ExchangeServiceImpl implements ExchangeService {
 
@@ -36,9 +37,7 @@ public class ExchangeServiceImpl implements ExchangeService {
         fromCode = normalize(fromCode);
         toCode = normalize(toCode);
 
-        if (fromCode.equals(toCode)) {
-            throw new BadRequestException("Base and target currencies must be different");
-        }
+        validateDifferentCurrencies(fromCode, toCode);
 
         String currencyPair = fromCode + toCode;
 

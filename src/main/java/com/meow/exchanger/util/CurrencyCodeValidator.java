@@ -6,7 +6,7 @@ import java.util.Locale;
 
 public final class CurrencyCodeValidator {
 
-    public static final String CURRENCY_CODE_PATTERN = "[A-Z]{3}";
+    private static final String CURRENCY_CODE_PATTERN = "[A-Z]{3}";
 
     private CurrencyCodeValidator() {
     }
@@ -23,5 +23,11 @@ public final class CurrencyCodeValidator {
         }
 
         return normalizedCode;
+    }
+
+    public static void validateDifferentCurrencies(String baseCode, String targetCode) {
+        if (baseCode.equals(targetCode)) {
+            throw new BadRequestException("Base and target currencies must be different");
+        }
     }
 }

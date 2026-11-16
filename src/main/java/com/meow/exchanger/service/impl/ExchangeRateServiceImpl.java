@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.meow.exchanger.util.CurrencyCodeValidator.normalize;
+import static com.meow.exchanger.util.CurrencyCodeValidator.validateDifferentCurrencies;
 
 public class ExchangeRateServiceImpl implements ExchangeRateService {
 
@@ -105,12 +106,6 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     private void validateRate(BigDecimal rate) {
         if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Invalid rate value");
-        }
-    }
-
-    private void validateDifferentCurrencies(String normalizedBaseCode, String normalizedTargetCode) {
-        if (normalizedBaseCode.equals(normalizedTargetCode)) {
-            throw new BadRequestException("Base and target currencies must be different");
         }
     }
 

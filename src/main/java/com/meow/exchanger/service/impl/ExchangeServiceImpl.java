@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
 
-import static com.meow.exchanger.util.CurrencyCodeValidator.normalize;
+import static com.meow.exchanger.util.CurrencyCodeValidator.validateCurrencyCode;
 import static com.meow.exchanger.util.CurrencyCodeValidator.validateDifferentCurrencies;
 
 public class ExchangeServiceImpl implements ExchangeService {
@@ -34,8 +34,8 @@ public class ExchangeServiceImpl implements ExchangeService {
 
         validateAmount(amount);
 
-        fromCode = normalize(fromCode);
-        toCode = normalize(toCode);
+        fromCode = validateCurrencyCode(fromCode);
+        toCode = validateCurrencyCode(toCode);
 
         validateDifferentCurrencies(fromCode, toCode);
 

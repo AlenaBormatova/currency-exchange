@@ -9,7 +9,7 @@ public final class CurrencyCodeValidator {
     private CurrencyCodeValidator() {
     }
 
-    public static String normalize(String code) {
+    public static String validateCurrencyCode(String code) {
         if (code == null || code.isBlank()) {
             throw new BadRequestException("Currency code is required");
         }

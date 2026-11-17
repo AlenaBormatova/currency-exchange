@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static com.meow.exchanger.util.CurrencyCodeValidator.normalize;
+import static com.meow.exchanger.util.CurrencyCodeValidator.validateCurrencyCode;
 import static com.meow.exchanger.util.CurrencyCodeValidator.validateDifferentCurrencies;
 
 public class ExchangeRateServiceImpl implements ExchangeRateService {
@@ -40,8 +40,8 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     @Override
     public ExchangeRate insert(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
 
-        String normalizedBaseCode = normalize(baseCurrencyCode);
-        String normalizedTargetCode = normalize(targetCurrencyCode);
+        String normalizedBaseCode = validateCurrencyCode(baseCurrencyCode);
+        String normalizedTargetCode = validateCurrencyCode(targetCurrencyCode);
 
         validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
 
@@ -90,8 +90,8 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         String baseCode = currencyPair.substring(0, 3);
         String targetCode = currencyPair.substring(3, 6);
 
-        String normalizedBaseCode = normalize(baseCode);
-        String normalizedTargetCode = normalize(targetCode);
+        String normalizedBaseCode = validateCurrencyCode(baseCode);
+        String normalizedTargetCode = validateCurrencyCode(targetCode);
 
         validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
 

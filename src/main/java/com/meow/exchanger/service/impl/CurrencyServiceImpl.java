@@ -8,7 +8,7 @@ import com.meow.exchanger.service.CurrencyService;
 
 import java.util.List;
 
-import static com.meow.exchanger.util.CurrencyCodeValidator.normalize;
+import static com.meow.exchanger.util.CurrencyCodeValidator.validateCurrencyCode;
 
 public class CurrencyServiceImpl implements CurrencyService {
 
@@ -25,7 +25,7 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     @Override
     public Currency findByCode(String code) {
-        String normalizedCode = normalize(code);
+        String normalizedCode = validateCurrencyCode(code);
 
         return currencyDao.findByCode(normalizedCode)
                 .orElseThrow(() -> new NotFoundException("Currency not found"));
@@ -40,7 +40,7 @@ public class CurrencyServiceImpl implements CurrencyService {
 
     private Currency prepareCurrencyForInsert(String name, String code, String sign) {
         String normalizedName = normalizeRequired(name, "Currency name is missing");
-        String normalizedCode = normalize(code);
+        String normalizedCode = validateCurrencyCode(code);
         String normalizedSign = normalizeRequired(sign, "Currency sign is missing");
 
         return new Currency(

@@ -30,7 +30,7 @@ public class ExceptionHandlingFilter extends HttpFilter {
         try {
             chain.doFilter(request, response);
 
-        } catch (BadRequestException e) {
+        } catch (IllegalArgumentException | BadRequestException e) {
             sendError(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
         } catch (NotFoundException e) {

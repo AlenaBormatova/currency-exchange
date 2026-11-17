@@ -1,7 +1,7 @@
 package com.meow.exchanger.service.impl;
 
 import com.meow.exchanger.exception.BadRequestException;
-import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.exception.ObjectNotFoundException;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.model.ExchangeResult;
 import com.meow.exchanger.service.ExchangeRateService;
@@ -56,17 +56,17 @@ public class ExchangeServiceImpl implements ExchangeService {
         }
 
         if (fromCode.equals(REFERENCE_CURRENCY_CODE) || toCode.equals(REFERENCE_CURRENCY_CODE)) {
-            throw new NotFoundException("Exchange rate not found");
+            throw new ObjectNotFoundException("Exchange rate not found");
         }
 
         String usdToBasePair = REFERENCE_CURRENCY_CODE + fromCode;
         String usdToTargetPair = REFERENCE_CURRENCY_CODE + toCode;
 
         ExchangeRate usdToBaseRate = exchangeRateService.findByPair(usdToBasePair)
-                .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Exchange rate not found"));
 
         ExchangeRate usdToTargetRate = exchangeRateService.findByPair(usdToTargetPair)
-                .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Exchange rate not found"));
 
         return createCrossExchangeResult(
                 usdToBaseRate,

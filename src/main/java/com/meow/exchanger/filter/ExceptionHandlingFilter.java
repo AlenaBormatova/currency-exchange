@@ -1,9 +1,9 @@
 package com.meow.exchanger.filter;
 
 import com.meow.exchanger.dto.ErrorResponse;
-import com.meow.exchanger.exception.AlreadyExistsException;
 import com.meow.exchanger.exception.BadRequestException;
-import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.exception.ObjectAlreadyExistsException;
+import com.meow.exchanger.exception.ObjectNotFoundException;
 import com.meow.exchanger.exception.StorageException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpFilter;
@@ -33,10 +33,10 @@ public class ExceptionHandlingFilter extends HttpFilter {
         } catch (IllegalArgumentException | BadRequestException e) {
             sendError(response, HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 
-        } catch (NotFoundException e) {
+        } catch (ObjectNotFoundException e) {
             sendError(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
-        } catch (AlreadyExistsException e) {
+        } catch (ObjectAlreadyExistsException e) {
             sendError(response, HttpServletResponse.SC_CONFLICT, e.getMessage());
 
         } catch (StorageException e) {

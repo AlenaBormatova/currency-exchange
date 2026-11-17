@@ -2,7 +2,7 @@ package com.meow.exchanger.service.impl;
 
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.exception.BadRequestException;
-import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.exception.ObjectNotFoundException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.service.CurrencyService;
 
@@ -28,7 +28,7 @@ public class CurrencyServiceImpl implements CurrencyService {
         String normalizedCode = validateCurrencyCode(code);
 
         return currencyDao.findByCode(normalizedCode)
-                .orElseThrow(() -> new NotFoundException("Currency not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Currency not found"));
     }
 
     @Override

@@ -3,7 +3,7 @@ package com.meow.exchanger.service.impl;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.exception.BadRequestException;
-import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.exception.ObjectNotFoundException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
@@ -63,7 +63,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         validateRate(rate);
 
         return exchangeRateDao.updateRate(pair.baseCode(), pair.targetCode(), rate)
-                .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Exchange rate not found"));
     }
 
     private ExchangeRate prepareExchangeRateForInsert(
@@ -100,7 +100,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
 
     private Currency findRequiredCurrency(String code) {
         return currencyDao.findByCode(code)
-                .orElseThrow(() -> new NotFoundException("Currency not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Currency not found"));
     }
 
     private void validateRate(BigDecimal rate) {

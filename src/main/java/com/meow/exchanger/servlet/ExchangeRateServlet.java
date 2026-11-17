@@ -1,7 +1,7 @@
 package com.meow.exchanger.servlet;
 
 import com.meow.exchanger.exception.BadRequestException;
-import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.exception.ObjectNotFoundException;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
@@ -40,7 +40,7 @@ public class ExchangeRateServlet extends HttpServlet {
         String currencyPair = pathInfo.substring(1);
 
         ExchangeRate exchangeRate = exchangeRateService.findByPair(currencyPair)
-                .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Exchange rate not found"));
 
         writeJsonResponseOk(ResponseMapper.toExchangeRateResponse(exchangeRate), response);
     }

@@ -1,8 +1,8 @@
 package com.meow.exchanger.filter;
 
 import com.meow.exchanger.dto.ErrorResponse;
+import com.meow.exchanger.exception.AlreadyExistsException;
 import com.meow.exchanger.exception.BadRequestException;
-import com.meow.exchanger.exception.ConflictException;
 import com.meow.exchanger.exception.NotFoundException;
 import com.meow.exchanger.exception.StorageException;
 import jakarta.servlet.FilterChain;
@@ -36,7 +36,7 @@ public class ExceptionHandlingFilter extends HttpFilter {
         } catch (NotFoundException e) {
             sendError(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());
 
-        } catch (ConflictException e) {
+        } catch (AlreadyExistsException e) {
             sendError(response, HttpServletResponse.SC_CONFLICT, e.getMessage());
 
         } catch (StorageException e) {

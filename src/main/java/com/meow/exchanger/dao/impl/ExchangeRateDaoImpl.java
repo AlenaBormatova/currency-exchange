@@ -2,7 +2,7 @@ package com.meow.exchanger.dao.impl;
 
 import com.meow.exchanger.config.ConnectionFactory;
 import com.meow.exchanger.dao.ExchangeRateDao;
-import com.meow.exchanger.exception.ConflictException;
+import com.meow.exchanger.exception.AlreadyExistsException;
 import com.meow.exchanger.exception.StorageException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
@@ -129,7 +129,7 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
         } catch (SQLException e) {
             if (e instanceof SQLiteException sqliteException
                     && sqliteException.getResultCode() == SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE) {
-                throw new ConflictException("Exchange rate already exists");
+                throw new AlreadyExistsException("Exchange rate already exists");
             }
 
             throw new StorageException("Failed to insert exchange rate", e);

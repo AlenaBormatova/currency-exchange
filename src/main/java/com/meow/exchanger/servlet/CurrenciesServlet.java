@@ -12,7 +12,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+import static com.meow.exchanger.servlet.util.JsonResponseUtil.writeJsonResponseCreated;
+import static com.meow.exchanger.servlet.util.JsonResponseUtil.writeJsonResponseOk;
 
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
@@ -33,7 +34,7 @@ public class CurrenciesServlet extends HttpServlet {
                 .map(ResponseMapper::toCurrencyResponse)
                 .toList();
 
-        sendJsonResponse(currencyResponses, response, HttpServletResponse.SC_OK);
+        writeJsonResponseOk(currencyResponses, response);
     }
 
     @Override
@@ -47,6 +48,6 @@ public class CurrenciesServlet extends HttpServlet {
 
         CurrencyResponse currencyResponse = ResponseMapper.toCurrencyResponse(currency);
 
-        sendJsonResponse(currencyResponse, response, HttpServletResponse.SC_CREATED);
+        writeJsonResponseCreated(currencyResponse, response);
     }
 }

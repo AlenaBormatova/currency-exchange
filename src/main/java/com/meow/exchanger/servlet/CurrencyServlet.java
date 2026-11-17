@@ -11,7 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+import static com.meow.exchanger.servlet.util.JsonResponseUtil.writeJsonResponseOk;
 
 @WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
@@ -36,10 +36,6 @@ public class CurrencyServlet extends HttpServlet {
 
         Currency currency = currencyService.findByCode(code);
 
-        sendJsonResponse(
-                ResponseMapper.toCurrencyResponse(currency),
-                response,
-                HttpServletResponse.SC_OK
-        );
+        writeJsonResponseOk(ResponseMapper.toCurrencyResponse(currency), response);
     }
 }

@@ -14,7 +14,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+import static com.meow.exchanger.servlet.util.JsonResponseUtil.writeJsonResponseCreated;
+import static com.meow.exchanger.servlet.util.JsonResponseUtil.writeJsonResponseOk;
 
 @WebServlet("/exchangeRates")
 public class ExchangeRatesServlet extends HttpServlet {
@@ -35,7 +36,7 @@ public class ExchangeRatesServlet extends HttpServlet {
                 .map(ResponseMapper::toExchangeRateResponse)
                 .toList();
 
-        sendJsonResponse(exchangeRateResponses, response, HttpServletResponse.SC_OK);
+        writeJsonResponseOk(exchangeRateResponses, response);
     }
 
     @Override
@@ -63,10 +64,6 @@ public class ExchangeRatesServlet extends HttpServlet {
                 parsedRate
         );
 
-        sendJsonResponse(
-                ResponseMapper.toExchangeRateResponse(createdExchangeRate),
-                response,
-                HttpServletResponse.SC_CREATED
-        );
+        writeJsonResponseCreated(ResponseMapper.toExchangeRateResponse(createdExchangeRate), response);
     }
 }

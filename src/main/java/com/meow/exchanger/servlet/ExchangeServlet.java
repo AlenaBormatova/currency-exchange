@@ -12,7 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+import static com.meow.exchanger.servlet.util.JsonResponseUtil.writeJsonResponseOk;
 
 @WebServlet("/exchange")
 public class ExchangeServlet extends HttpServlet {
@@ -45,10 +45,6 @@ public class ExchangeServlet extends HttpServlet {
 
         ExchangeResult result = exchangeService.exchange(from, to, parsedAmount);
 
-        sendJsonResponse(
-                ResponseMapper.toExchangeResponse(result),
-                response,
-                HttpServletResponse.SC_OK
-        );
+        writeJsonResponseOk(ResponseMapper.toExchangeResponse(result), response);
     }
 }

@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+import static com.meow.exchanger.servlet.util.JsonResponseUtil.writeJsonResponseOk;
 
 @WebServlet("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
@@ -42,11 +42,7 @@ public class ExchangeRateServlet extends HttpServlet {
         ExchangeRate exchangeRate = exchangeRateService.findByPair(currencyPair)
                 .orElseThrow(() -> new NotFoundException("Exchange rate not found"));
 
-        sendJsonResponse(
-                ResponseMapper.toExchangeRateResponse(exchangeRate),
-                response,
-                HttpServletResponse.SC_OK
-        );
+        writeJsonResponseOk(ResponseMapper.toExchangeRateResponse(exchangeRate), response);
     }
 
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -63,11 +59,7 @@ public class ExchangeRateServlet extends HttpServlet {
 
         ExchangeRate exchangeRate = exchangeRateService.updateRate(currencyPair, parsedRate);
 
-        sendJsonResponse(
-                ResponseMapper.toExchangeRateResponse(exchangeRate),
-                response,
-                HttpServletResponse.SC_OK
-        );
+        writeJsonResponseOk(ResponseMapper.toExchangeRateResponse(exchangeRate), response);
     }
 
     @Override

@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import static com.meow.exchanger.util.JsonResponseUtil.sendJsonResponse;
+import static com.meow.exchanger.servlet.util.JsonResponseUtil.writeJsonResponse;
 
 public class ExceptionHandlingFilter extends HttpFilter {
 
@@ -63,6 +63,6 @@ public class ExceptionHandlingFilter extends HttpFilter {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        sendJsonResponse(new ErrorResponse(message), response, status);
+        writeJsonResponse(new ErrorResponse(message), response, status);
     }
 }

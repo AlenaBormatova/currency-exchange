@@ -3,7 +3,7 @@ package com.meow.exchanger.dao.impl;
 import com.meow.exchanger.config.ConnectionFactory;
 import com.meow.exchanger.dao.CurrencyDao;
 import com.meow.exchanger.exception.ConflictException;
-import com.meow.exchanger.exception.DatabaseException;
+import com.meow.exchanger.exception.StorageException;
 import com.meow.exchanger.model.Currency;
 import org.sqlite.SQLiteErrorCode;
 import org.sqlite.SQLiteException;
@@ -52,7 +52,7 @@ public class CurrencyDaoImpl implements CurrencyDao {
             return currencies;
 
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to load currencies", e);
+            throw new StorageException("Failed to load currencies", e);
         }
     }
 
@@ -73,7 +73,7 @@ public class CurrencyDaoImpl implements CurrencyDao {
             return Optional.empty();
 
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to find currency", e);
+            throw new StorageException("Failed to find currency", e);
         }
     }
 
@@ -104,7 +104,7 @@ public class CurrencyDaoImpl implements CurrencyDao {
                 throw new ConflictException("Currency with this code already exists");
             }
 
-            throw new DatabaseException("Failed to insert currency", e);
+            throw new StorageException("Failed to insert currency", e);
         }
     }
 

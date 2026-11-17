@@ -3,7 +3,7 @@ package com.meow.exchanger.dao.impl;
 import com.meow.exchanger.config.ConnectionFactory;
 import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.exception.ConflictException;
-import com.meow.exchanger.exception.DatabaseException;
+import com.meow.exchanger.exception.StorageException;
 import com.meow.exchanger.model.Currency;
 import com.meow.exchanger.model.ExchangeRate;
 import org.sqlite.SQLiteErrorCode;
@@ -79,7 +79,7 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
             return exchangeRates;
 
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to load exchange rates", e);
+            throw new StorageException("Failed to load exchange rates", e);
         }
     }
 
@@ -101,7 +101,7 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
             return Optional.empty();
 
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to find exchange rate", e);
+            throw new StorageException("Failed to find exchange rate", e);
         }
     }
 
@@ -132,7 +132,7 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
                 throw new ConflictException("Exchange rate already exists");
             }
 
-            throw new DatabaseException("Failed to insert exchange rate", e);
+            throw new StorageException("Failed to insert exchange rate", e);
         }
     }
 
@@ -150,7 +150,7 @@ public class ExchangeRateDaoImpl implements ExchangeRateDao {
                 return Optional.empty();
             }
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to update exchange rate", e);
+            throw new StorageException("Failed to update exchange rate", e);
         }
 
         return findByPair(baseCode, targetCode);

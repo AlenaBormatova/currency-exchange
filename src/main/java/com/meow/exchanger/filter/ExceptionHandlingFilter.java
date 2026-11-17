@@ -3,8 +3,8 @@ package com.meow.exchanger.filter;
 import com.meow.exchanger.dto.ErrorResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.ConflictException;
-import com.meow.exchanger.exception.DatabaseException;
 import com.meow.exchanger.exception.NotFoundException;
+import com.meow.exchanger.exception.StorageException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,8 +39,8 @@ public class ExceptionHandlingFilter extends HttpFilter {
         } catch (ConflictException e) {
             sendError(response, HttpServletResponse.SC_CONFLICT, e.getMessage());
 
-        } catch (DatabaseException e) {
-            log.error("Database error", e);
+        } catch (StorageException e) {
+            log.error("Storage error", e);
             sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
 
         } catch (Exception e) {

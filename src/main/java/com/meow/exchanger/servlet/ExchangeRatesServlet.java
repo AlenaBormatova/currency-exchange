@@ -3,6 +3,8 @@ package com.meow.exchanger.servlet;
 import com.meow.exchanger.dto.ExchangeRateResponse;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.mapper.ResponseMapper;
+import com.meow.exchanger.model.CurrencyCode;
+import com.meow.exchanger.model.CurrencyPair;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
 import jakarta.servlet.annotation.WebServlet;
@@ -42,8 +44,10 @@ public class ExchangeRatesServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        String baseCurrencyCode = request.getParameter("baseCurrencyCode");
-        String targetCurrencyCode = request.getParameter("targetCurrencyCode");
+        CurrencyPair pair = new CurrencyPair(
+                new CurrencyCode(request.getParameter("baseCurrencyCode")),
+                new CurrencyCode(request.getParameter("targetCurrencyCode"))
+        );
         String rate = request.getParameter("rate");
 
         if (rate == null || rate.isBlank()) {
@@ -59,8 +63,7 @@ public class ExchangeRatesServlet extends HttpServlet {
         }
 
         ExchangeRate createdExchangeRate = exchangeRateService.insert(
-                baseCurrencyCode,
-                targetCurrencyCode,
+                pair,
                 parsedRate
         );
 

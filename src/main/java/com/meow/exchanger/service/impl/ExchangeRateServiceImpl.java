@@ -5,15 +5,14 @@ import com.meow.exchanger.dao.ExchangeRateDao;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.ObjectNotFoundException;
 import com.meow.exchanger.model.Currency;
+import com.meow.exchanger.model.CurrencyCode;
+import com.meow.exchanger.model.CurrencyPair;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-
-import static com.meow.exchanger.util.CurrencyCodeValidator.validateCurrencyCode;
-import static com.meow.exchanger.util.CurrencyCodeValidator.validateDifferentCurrencies;
 
 public class ExchangeRateServiceImpl implements ExchangeRateService {
 
@@ -31,25 +30,21 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     }
 
     @Override
-    public Optional<ExchangeRate> findByPair(String currencyPair) {
-        CurrencyPair pair = parseCurrencyPair(currencyPair);
-
-        return exchangeRateDao.findByPair(pair.baseCode(), pair.targetCode());
+    public Optional<ExchangeRate> findByPair(CurrencyPair pair) {
+        return exchangeRateDao.findByPair(pair.baseCode().value(), pair.targetCode().value());
     }
 
     @Override
-    public ExchangeRate insert(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
-
-        String normalizedBaseCode = validateCurrencyCode(baseCurrencyCode);
-        String normalizedTargetCode = validateCurrencyCode(targetCurrencyCode);
-
-        validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
-
+    public ExchangeRate insert(CurrencyPair pair, BigDecimal rate) {
         validateRate(rate);
 
-        ExchangeRate exchangeRate = prepareExchangeRateForInsert(
-                normalizedBaseCode,
-                normalizedTargetCode,
+        Currency baseCurrency = findRequiredCurrency(pair.baseCode());
+        Currency targetCurrency = findRequiredCurrency(pair.targetCode());
+
+        ExchangeRate exchangeRate = new ExchangeRate(
+                null,
+                baseCurrency,
+                targetCurrency,
                 rate
         );
 
@@ -57,49 +52,15 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
     }
 
     @Override
-    public ExchangeRate updateRate(String currencyPair, BigDecimal rate) {
-        CurrencyPair pair = parseCurrencyPair(currencyPair);
-
+    public ExchangeRate updateRate(CurrencyPair pair, BigDecimal rate) {
         validateRate(rate);
 
-        return exchangeRateDao.updateRate(pair.baseCode(), pair.targetCode(), rate)
+        return exchangeRateDao.updateRate(pair.baseCode().value(), pair.targetCode().value(), rate)
                 .orElseThrow(() -> new ObjectNotFoundException("Exchange rate not found"));
     }
 
-    private ExchangeRate prepareExchangeRateForInsert(
-            String baseCurrencyCode,
-            String targetCurrencyCode,
-            BigDecimal rate
-    ) {
-        Currency baseCurrency = findRequiredCurrency(baseCurrencyCode);
-        Currency targetCurrency = findRequiredCurrency(targetCurrencyCode);
-
-        return new ExchangeRate(
-                null,
-                baseCurrency,
-                targetCurrency,
-                rate
-        );
-    }
-
-    private CurrencyPair parseCurrencyPair(String currencyPair) {
-        if (currencyPair == null || currencyPair.length() != 6) {
-            throw new BadRequestException("Invalid currency pair");
-        }
-
-        String baseCode = currencyPair.substring(0, 3);
-        String targetCode = currencyPair.substring(3, 6);
-
-        String normalizedBaseCode = validateCurrencyCode(baseCode);
-        String normalizedTargetCode = validateCurrencyCode(targetCode);
-
-        validateDifferentCurrencies(normalizedBaseCode, normalizedTargetCode);
-
-        return new CurrencyPair(normalizedBaseCode, normalizedTargetCode);
-    }
-
-    private Currency findRequiredCurrency(String code) {
-        return currencyDao.findByCode(code)
+    private Currency findRequiredCurrency(CurrencyCode code) {
+        return currencyDao.findByCode(code.value())
                 .orElseThrow(() -> new ObjectNotFoundException("Currency not found"));
     }
 
@@ -107,8 +68,5 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
         if (rate == null || rate.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BadRequestException("Invalid rate value");
         }
-    }
-
-    private record CurrencyPair(String baseCode, String targetCode) {
     }
 }

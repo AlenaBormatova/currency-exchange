@@ -3,6 +3,7 @@ package com.meow.exchanger.servlet;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.Currency;
+import com.meow.exchanger.model.CurrencyCode;
 import com.meow.exchanger.service.CurrencyService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -32,7 +33,7 @@ public class CurrencyServlet extends HttpServlet {
             throw new BadRequestException("Currency code is missing in the path");
         }
 
-        String code = pathInfo.substring(1);
+        CurrencyCode code = new CurrencyCode(pathInfo.substring(1));
 
         Currency currency = currencyService.findByCode(code);
 

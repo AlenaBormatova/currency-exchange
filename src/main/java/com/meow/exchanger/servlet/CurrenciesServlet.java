@@ -3,6 +3,7 @@ package com.meow.exchanger.servlet;
 import com.meow.exchanger.dto.CurrencyResponse;
 import com.meow.exchanger.mapper.ResponseMapper;
 import com.meow.exchanger.model.Currency;
+import com.meow.exchanger.model.CurrencyCode;
 import com.meow.exchanger.service.CurrencyService;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -41,7 +42,7 @@ public class CurrenciesServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String name = request.getParameter("name");
-        String code = request.getParameter("code");
+        CurrencyCode code = new CurrencyCode(request.getParameter("code"));
         String sign = request.getParameter("sign");
 
         Currency currency = currencyService.insert(name, code, sign);

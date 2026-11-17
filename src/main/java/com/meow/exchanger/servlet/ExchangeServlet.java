@@ -2,6 +2,8 @@ package com.meow.exchanger.servlet;
 
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.mapper.ResponseMapper;
+import com.meow.exchanger.model.CurrencyCode;
+import com.meow.exchanger.model.CurrencyPair;
 import com.meow.exchanger.model.ExchangeResult;
 import com.meow.exchanger.service.ExchangeService;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,8 +29,11 @@ public class ExchangeServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        String from = request.getParameter("from");
-        String to = request.getParameter("to");
+        CurrencyPair pair = new CurrencyPair(
+                new CurrencyCode(request.getParameter("from")),
+                new CurrencyCode(request.getParameter("to"))
+        );
+
         String amount = request.getParameter("amount");
 
         if (amount == null || amount.isBlank()) {
@@ -43,7 +48,7 @@ public class ExchangeServlet extends HttpServlet {
             throw new BadRequestException("Invalid amount");
         }
 
-        ExchangeResult result = exchangeService.exchange(from, to, parsedAmount);
+        ExchangeResult result = exchangeService.exchange(pair, parsedAmount);
 
         writeJsonResponseOk(ResponseMapper.toExchangeResponse(result), response);
     }

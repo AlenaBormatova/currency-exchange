@@ -3,6 +3,7 @@ package com.meow.exchanger.servlet;
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.ObjectNotFoundException;
 import com.meow.exchanger.mapper.ResponseMapper;
+import com.meow.exchanger.model.CurrencyPair;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.service.ExchangeRateService;
 import jakarta.servlet.ServletException;
@@ -37,9 +38,9 @@ public class ExchangeRateServlet extends HttpServlet {
             throw new BadRequestException("Currency pair is missing in the path");
         }
 
-        String currencyPair = pathInfo.substring(1);
+        CurrencyPair pair = CurrencyPair.from(pathInfo.substring(1));
 
-        ExchangeRate exchangeRate = exchangeRateService.findByPair(currencyPair)
+        ExchangeRate exchangeRate = exchangeRateService.findByPair(pair)
                 .orElseThrow(() -> new ObjectNotFoundException("Exchange rate not found"));
 
         writeJsonResponseOk(ResponseMapper.toExchangeRateResponse(exchangeRate), response);
@@ -53,11 +54,11 @@ public class ExchangeRateServlet extends HttpServlet {
             throw new BadRequestException("Currency pair is missing in the path");
         }
 
-        String currencyPair = pathInfo.substring(1);
+        CurrencyPair pair = CurrencyPair.from(pathInfo.substring(1));
 
         BigDecimal parsedRate = parseRateFromRequest(request);
 
-        ExchangeRate exchangeRate = exchangeRateService.updateRate(currencyPair, parsedRate);
+        ExchangeRate exchangeRate = exchangeRateService.updateRate(pair, parsedRate);
 
         writeJsonResponseOk(ResponseMapper.toExchangeRateResponse(exchangeRate), response);
     }

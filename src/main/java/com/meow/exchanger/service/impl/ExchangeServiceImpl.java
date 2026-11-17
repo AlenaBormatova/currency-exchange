@@ -2,6 +2,8 @@ package com.meow.exchanger.service.impl;
 
 import com.meow.exchanger.exception.BadRequestException;
 import com.meow.exchanger.exception.ObjectNotFoundException;
+import com.meow.exchanger.model.CurrencyCode;
+import com.meow.exchanger.model.CurrencyPair;
 import com.meow.exchanger.model.ExchangeRate;
 import com.meow.exchanger.model.ExchangeResult;
 import com.meow.exchanger.service.ExchangeRateService;
@@ -11,9 +13,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
 
-import static com.meow.exchanger.util.CurrencyCodeValidator.validateCurrencyCode;
-import static com.meow.exchanger.util.CurrencyCodeValidator.validateDifferentCurrencies;
-
 public class ExchangeServiceImpl implements ExchangeService {
 
     private static final int MONEY_SCALE = 2;
@@ -21,7 +20,7 @@ public class ExchangeServiceImpl implements ExchangeService {
 
     private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
-    private static final String REFERENCE_CURRENCY_CODE = "USD";
+    private static final CurrencyCode REFERENCE_CURRENCY_CODE = new CurrencyCode("USD");
 
     private final ExchangeRateService exchangeRateService;
 
@@ -30,37 +29,27 @@ public class ExchangeServiceImpl implements ExchangeService {
     }
 
     @Override
-    public ExchangeResult exchange(String fromCode, String toCode, BigDecimal amount) {
-
+    public ExchangeResult exchange(CurrencyPair pair, BigDecimal amount) {
         validateAmount(amount);
 
-        fromCode = validateCurrencyCode(fromCode);
-        toCode = validateCurrencyCode(toCode);
-
-        validateDifferentCurrencies(fromCode, toCode);
-
-        String currencyPair = fromCode + toCode;
-
-        Optional<ExchangeRate> directRate = exchangeRateService.findByPair(currencyPair);
+        Optional<ExchangeRate> directRate = exchangeRateService.findByPair(pair);
 
         if (directRate.isPresent()) {
             return createDirectExchangeResult(directRate.get(), amount);
         }
 
-        String reversePair = toCode + fromCode;
-
-        Optional<ExchangeRate> reverseRate = exchangeRateService.findByPair(reversePair);
+        Optional<ExchangeRate> reverseRate = exchangeRateService.findByPair(pair.reverse());
 
         if (reverseRate.isPresent()) {
             return createInverseExchangeResult(reverseRate.get(), amount);
         }
 
-        if (fromCode.equals(REFERENCE_CURRENCY_CODE) || toCode.equals(REFERENCE_CURRENCY_CODE)) {
+        if (pair.baseCode().equals(REFERENCE_CURRENCY_CODE) || pair.targetCode().equals(REFERENCE_CURRENCY_CODE)) {
             throw new ObjectNotFoundException("Exchange rate not found");
         }
 
-        String usdToBasePair = REFERENCE_CURRENCY_CODE + fromCode;
-        String usdToTargetPair = REFERENCE_CURRENCY_CODE + toCode;
+        CurrencyPair usdToBasePair = new CurrencyPair(REFERENCE_CURRENCY_CODE, pair.baseCode());
+        CurrencyPair usdToTargetPair = new CurrencyPair(REFERENCE_CURRENCY_CODE, pair.targetCode());
 
         ExchangeRate usdToBaseRate = exchangeRateService.findByPair(usdToBasePair)
                 .orElseThrow(() -> new ObjectNotFoundException("Exchange rate not found"));
@@ -100,17 +89,9 @@ public class ExchangeServiceImpl implements ExchangeService {
     ) {
         BigDecimal rate = exchangeRate.getRate();
 
-        BigDecimal calculatedRate = BigDecimal.ONE.divide(
-                rate,
-                RATE_SCALE,
-                ROUNDING_MODE
-        );
+        BigDecimal calculatedRate = BigDecimal.ONE.divide(rate, RATE_SCALE, ROUNDING_MODE);
 
-        BigDecimal convertedAmount = amount.divide(
-                rate,
-                MONEY_SCALE,
-                ROUNDING_MODE
-        );
+        BigDecimal convertedAmount = amount.divide(rate, MONEY_SCALE, ROUNDING_MODE);
 
         return new ExchangeResult(
                 exchangeRate.getTargetCurrency(),
@@ -129,19 +110,11 @@ public class ExchangeServiceImpl implements ExchangeService {
         BigDecimal rateBase = usdToBaseRate.getRate();
         BigDecimal rateTarget = usdToTargetRate.getRate();
 
-        BigDecimal calculatedRate = rateTarget.divide(
-                rateBase,
-                RATE_SCALE,
-                ROUNDING_MODE
-        );
+        BigDecimal calculatedRate = rateTarget.divide(rateBase, RATE_SCALE, ROUNDING_MODE);
 
         BigDecimal convertedAmount = amount
                 .multiply(rateTarget)
-                .divide(
-                        rateBase,
-                        MONEY_SCALE,
-                        ROUNDING_MODE
-                );
+                .divide(rateBase, MONEY_SCALE, ROUNDING_MODE);
 
         return new ExchangeResult(
                 usdToBaseRate.getTargetCurrency(),
